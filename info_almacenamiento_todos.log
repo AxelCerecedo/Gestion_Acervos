@@ -1,0 +1,907 @@
+========================================
+  REPORTE DE ALMACENAMIENTO - TODOS LOS SERVIDORES
+  Fecha de ejecución: 2025-12-26 14:19:42
+  Host ejecutor: sc-tainacanDesarrollo
+========================================
+
+
+########################################
+ SERVIDOR: emunoz@172.17.175.80
+ FECHA: vie 26 dic 2025 14:19:43 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             1.9G      0  1.9G   0% /dev
+tmpfs            392M   1.3M  390M   1% /run
+/dev/sda5         78G    66G  8.2G  89% /
+tmpfs            2.0G   1.2M  2.0G   1% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+tmpfs            2.0G      0  2.0G   0% /sys/fs/cgroup
+/dev/loop0       128K   128K     0 100% /snap/bare/5
+/dev/loop7       219M   219M     0 100% /snap/gnome-3-34-1804/90
+/dev/loop8       219M   219M     0 100% /snap/gnome-3-34-1804/93
+/dev/loop9       350M   350M     0 100% /snap/gnome-3-38-2004/140
+/dev/loop10      350M   350M     0 100% /snap/gnome-3-38-2004/143
+/dev/loop13       82M    82M     0 100% /snap/gtk-common-themes/1534
+/dev/loop12      517M   517M     0 100% /snap/gnome-42-2204/202
+/dev/loop15       13M    13M     0 100% /snap/snap-store/1113
+/dev/loop14       92M    92M     0 100% /snap/gtk-common-themes/1535
+/dev/loop16       13M    13M     0 100% /snap/snap-store/1216
+/dev/sda1        511M   4.0K  511M   1% /boot/efi
+/dev/loop5        51M    51M     0 100% /snap/snapd/25202
+/dev/loop19      517M   517M     0 100% /snap/gnome-42-2204/226
+/dev/loop1        51M    51M     0 100% /snap/snapd/25577
+/dev/loop18       56M    56M     0 100% /snap/core18/2959
+/dev/loop6        64M    64M     0 100% /snap/core20/2682
+/dev/loop4        74M    74M     0 100% /snap/core22/2163
+/dev/loop2        56M    56M     0 100% /snap/core18/2976
+/dev/loop11       64M    64M     0 100% /snap/core20/2686
+/dev/loop17       74M    74M     0 100% /snap/core22/2193
+tmpfs            392M   4.0K  392M   1% /run/user/1005
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME     SIZE TYPE MOUNTPOINT
+loop0      4K loop /snap/bare/5
+loop1   50.9M loop /snap/snapd/25577
+loop2   55.5M loop /snap/core18/2976
+loop4     74M loop /snap/core22/2163
+loop5   50.8M loop /snap/snapd/25202
+loop6   63.8M loop /snap/core20/2682
+loop7  218.4M loop /snap/gnome-3-34-1804/90
+loop8  218.4M loop /snap/gnome-3-34-1804/93
+loop9  349.7M loop /snap/gnome-3-38-2004/140
+loop10 349.7M loop /snap/gnome-3-38-2004/143
+loop11  63.8M loop /snap/core20/2686
+loop12   516M loop /snap/gnome-42-2204/202
+loop13  81.3M loop /snap/gtk-common-themes/1534
+loop14  91.7M loop /snap/gtk-common-themes/1535
+loop15  12.9M loop /snap/snap-store/1113
+loop16  12.2M loop /snap/snap-store/1216
+loop17    74M loop /snap/core22/2193
+loop18  55.5M loop /snap/core18/2959
+loop19 516.2M loop /snap/gnome-42-2204/226
+sda       80G disk 
+├─sda1   512M part /boot/efi
+├─sda2     1K part 
+└─sda5  79.5G part /
+sr0      1.2G rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   1.9G      0  1.9G   0% /dev
+tmpfs          tmpfs      392M   1.3M  390M   1% /run
+/dev/sda5      ext4        78G    66G  8.2G  89% /
+tmpfs          tmpfs      2.0G   1.2M  2.0G   1% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+tmpfs          tmpfs      2.0G      0  2.0G   0% /sys/fs/cgroup
+/dev/loop0     squashfs   128K   128K     0 100% /snap/bare/5
+/dev/loop7     squashfs   219M   219M     0 100% /snap/gnome-3-34-1804/90
+/dev/loop8     squashfs   219M   219M     0 100% /snap/gnome-3-34-1804/93
+/dev/loop9     squashfs   350M   350M     0 100% /snap/gnome-3-38-2004/140
+/dev/loop10    squashfs   350M   350M     0 100% /snap/gnome-3-38-2004/143
+/dev/loop13    squashfs    82M    82M     0 100% /snap/gtk-common-themes/1534
+/dev/loop12    squashfs   517M   517M     0 100% /snap/gnome-42-2204/202
+/dev/loop15    squashfs    13M    13M     0 100% /snap/snap-store/1113
+/dev/loop14    squashfs    92M    92M     0 100% /snap/gtk-common-themes/1535
+/dev/loop16    squashfs    13M    13M     0 100% /snap/snap-store/1216
+/dev/sda1      vfat       511M   4.0K  511M   1% /boot/efi
+/dev/loop5     squashfs    51M    51M     0 100% /snap/snapd/25202
+/dev/loop19    squashfs   517M   517M     0 100% /snap/gnome-42-2204/226
+/dev/loop1     squashfs    51M    51M     0 100% /snap/snapd/25577
+/dev/loop18    squashfs    56M    56M     0 100% /snap/core18/2959
+/dev/loop6     squashfs    64M    64M     0 100% /snap/core20/2682
+/dev/loop4     squashfs    74M    74M     0 100% /snap/core22/2163
+/dev/loop2     squashfs    56M    56M     0 100% /snap/core18/2976
+/dev/loop11    squashfs    64M    64M     0 100% /snap/core20/2686
+/dev/loop17    squashfs    74M    74M     0 100% /snap/core22/2193
+tmpfs          tmpfs      392M   4.0K  392M   1% /run/user/1005
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+
+########################################
+ SERVIDOR: emunoz@172.17.175.137
+ FECHA: vie 26 dic 2025 14:23:56 CST
+########################################
+
+❌ ERROR: No fue posible conectar al servidor
+Posibles causas:
+- Host apagado
+- SSH no disponible
+- Credenciales incorrectas
+- Firewall o red
+
+########################################
+ SERVIDOR: emunoz@172.17.175.122
+ FECHA: vie 26 dic 2025 14:25:14 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-repofic 5.10.0-23-amd64 #1 SMP Debian 5.10.179-1 (2023-05-12) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             7.8G      0  7.8G   0% /dev
+tmpfs            1.6G   656K  1.6G   1% /run
+/dev/sda1         23G   2.2G   20G  11% /
+tmpfs            7.9G      0  7.9G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda3        9.1G   203M  8.4G   3% /home
+/dev/sda5        9.1G   3.1G  5.6G  36% /var
+/dev/sda7        1.8G   260M  1.5G  16% /tmp
+/dev/sda4        2.0T    17G  1.9T   1% /storage
+tmpfs            1.6G      0  1.6G   0% /run/user/1001
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME    SIZE TYPE MOUNTPOINT
+sda       2T disk 
+├─sda1 23.3G part /
+├─sda2    1K part 
+├─sda3  9.3G part /home
+├─sda4    2T part /storage
+├─sda5  9.3G part /var
+├─sda6  976M part [SWAP]
+└─sda7  1.9G part /tmp
+sr0     379M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   7.8G      0  7.8G   0% /dev
+tmpfs          tmpfs      1.6G   656K  1.6G   1% /run
+/dev/sda1      ext4        23G   2.2G   20G  11% /
+tmpfs          tmpfs      7.9G      0  7.9G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda3      ext4       9.1G   203M  8.4G   3% /home
+/dev/sda5      ext4       9.1G   3.1G  5.6G  36% /var
+/dev/sda7      ext4       1.8G   260M  1.5G  16% /tmp
+/dev/sda4      ext4       2.0T    17G  1.9T   1% /storage
+tmpfs          tmpfs      1.6G      0  1.6G   0% /run/user/1001
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+21G	/
+203M	/home
+1.9G	/var
+548K	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              2.0M     352    2.0M    1% /dev
+tmpfs             2.0M     577    2.0M    1% /run
+/dev/sda1         1.5M     46K    1.5M    4% /
+tmpfs             2.0M       1    2.0M    1% /dev/shm
+tmpfs             2.0M       3    2.0M    1% /run/lock
+/dev/sda3         597K    2.2K    595K    1% /home
+/dev/sda5         597K    5.2K    592K    1% /var
+/dev/sda7         120K     308    119K    1% /tmp
+/dev/sda4         126M    160K    126M    1% /storage
+tmpfs             400K      18    400K    1% /run/user/1001
+
+########################################
+ SERVIDOR: emunoz@172.17.175.127
+ FECHA: vie 26 dic 2025 14:26:18 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-tainacan-sidaberto 5.10.0-23-amd64 #1 SMP Debian 5.10.179-1 (2023-05-12) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             2,9G      0  2,9G   0% /dev
+tmpfs            593M   640K  593M   1% /run
+/dev/sda1         19G   1,7G   16G  10% /
+tmpfs            2,9G      0  2,9G   0% /dev/shm
+tmpfs            5,0M      0  5,0M   0% /run/lock
+/dev/sda8         71G    44G   25G  65% /var
+/dev/sda5        6,4G  1003M  5,1G  17% /home
+/dev/sda7        1,2G    68K  1,1G   1% /tmp
+tmpfs            593M      0  593M   0% /run/user/1003
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME    SIZE TYPE MOUNTPOINT
+sda     100G disk 
+├─sda1 18,8G part /
+├─sda2    1K part 
+├─sda5  6,6G part /home
+├─sda6  976M part [SWAP]
+├─sda7  1,2G part /tmp
+└─sda8 72,5G part /var
+sr0     379M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   2,9G      0  2,9G   0% /dev
+tmpfs          tmpfs      593M   640K  593M   1% /run
+/dev/sda1      ext4        19G   1,7G   16G  10% /
+tmpfs          tmpfs      2,9G      0  2,9G   0% /dev/shm
+tmpfs          tmpfs      5,0M      0  5,0M   0% /run/lock
+/dev/sda8      ext4        71G    44G   25G  65% /var
+/dev/sda5      ext4       6,4G  1003M  5,1G  17% /home
+/dev/sda7      ext4       1,2G    68K  1,1G   1% /tmp
+tmpfs          tmpfs      593M      0  593M   0% /run/user/1003
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+40G	/
+1003M	/home
+38G	/var
+29G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              737K     346    737K    1% /dev
+tmpfs             742K     562    741K    1% /run
+/dev/sda1         1,2M     48K    1,2M    4% /
+tmpfs             742K       1    742K    1% /dev/shm
+tmpfs             742K       3    742K    1% /run/lock
+/dev/sda8         4,6M     52K    4,5M    2% /var
+/dev/sda5         422K    8,2K    414K    2% /home
+/dev/sda7          76K      26     76K    1% /tmp
+tmpfs             149K      18    149K    1% /run/user/1003
+
+########################################
+ SERVIDOR: emunoz@172.17.175.99
+ FECHA: vie 26 dic 2025 14:27:28 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-repoinehrm 5.10.0-32-amd64 #1 SMP Debian 5.10.223-1 (2024-08-10) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             1.9G      0  1.9G   0% /dev
+tmpfs            392M   640K  392M   1% /run
+/dev/sda1         23G   3.6G   18G  17% /
+tmpfs            2.0G      0  2.0G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda7        1.7G   244K  1.6G   1% /tmp
+/dev/sda8        113G    70G   38G  65% /var
+/dev/sda5        9.1G   1.1G  7.6G  12% /home
+tmpfs            392M      0  392M   0% /run/user/1000
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME     SIZE TYPE MOUNTPOINT
+sda      150G disk 
+├─sda1  23.3G part /
+├─sda2     1K part 
+├─sda5   9.3G part /home
+├─sda6   976M part [SWAP]
+├─sda7   1.8G part /tmp
+└─sda8 114.7G part /var
+sr0     1024M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   1.9G      0  1.9G   0% /dev
+tmpfs          tmpfs      392M   640K  392M   1% /run
+/dev/sda1      ext4        23G   3.6G   18G  17% /
+tmpfs          tmpfs      2.0G      0  2.0G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda7      ext4       1.7G   244K  1.6G   1% /tmp
+/dev/sda8      ext4       113G    70G   38G  65% /var
+/dev/sda5      ext4       9.1G   1.1G  7.6G  12% /home
+tmpfs          tmpfs      392M      0  392M   0% /run/user/1000
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+53G	/
+1.1G	/home
+49G	/var
+43G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              486K     345    486K    1% /dev
+tmpfs             490K     560    490K    1% /run
+/dev/sda1         1.5M    111K    1.4M    8% /
+tmpfs             490K       1    490K    1% /dev/shm
+tmpfs             490K       3    490K    1% /run/lock
+/dev/sda7         113K      36    113K    1% /tmp
+/dev/sda8         7.2M    568K    6.7M    8% /var
+/dev/sda5         597K    8.2K    589K    2% /home
+tmpfs              98K      18     98K    1% /run/user/1000
+
+########################################
+ SERVIDOR: emunoz@10.11.255.137
+ FECHA: vie 26 dic 2025 14:28:25 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+===== USO DE DISCOS (df -h) =====
+Filesystem                     Size  Used Avail Use% Mounted on
+udev                           1.9G     0  1.9G   0% /dev
+tmpfs                          394M  1.2M  393M   1% /run
+/dev/mapper/culturas--vg-root  193G   69G  114G  38% /
+tmpfs                          2.0G     0  2.0G   0% /dev/shm
+tmpfs                          5.0M     0  5.0M   0% /run/lock
+tmpfs                          2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/sda1                      470M  188M  258M  43% /boot
+tmpfs                          394M     0  394M   0% /run/user/1003
+/dev/loop7                      92M   92M     0 100% /snap/lxd/32662
+/dev/loop1                      51M   51M     0 100% /snap/snapd/25202
+/dev/loop4                      51M   51M     0 100% /snap/snapd/25577
+/dev/loop5                      64M   64M     0 100% /snap/core20/2682
+/dev/loop2                      92M   92M     0 100% /snap/lxd/36554
+/dev/loop0                      64M   64M     0 100% /snap/core20/2686
+tmpfs                          394M     0  394M   0% /run/user/1004
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME                      SIZE TYPE MOUNTPOINT
+loop0                    63.8M loop /snap/core20/2686
+loop1                    50.8M loop /snap/snapd/25202
+loop2                    91.9M loop /snap/lxd/36554
+loop4                    50.9M loop /snap/snapd/25577
+loop5                    63.8M loop /snap/core20/2682
+loop7                    91.9M loop /snap/lxd/32662
+sda                       200G disk 
+├─sda1                    487M part /boot
+├─sda2                      1K part 
+└─sda5                  199.5G part 
+  ├─culturas--vg-root   195.5G lvm  /
+  └─culturas--vg-swap_1     4G lvm  [SWAP]
+sr0                      1024M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+udev                          devtmpfs  1.9G     0  1.9G   0% /dev
+tmpfs                         tmpfs     394M  1.2M  393M   1% /run
+/dev/mapper/culturas--vg-root ext4      193G   69G  114G  38% /
+tmpfs                         tmpfs     2.0G     0  2.0G   0% /dev/shm
+tmpfs                         tmpfs     5.0M     0  5.0M   0% /run/lock
+tmpfs                         tmpfs     2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/sda1                     ext2      470M  188M  258M  43% /boot
+tmpfs                         tmpfs     394M     0  394M   0% /run/user/1003
+/dev/loop7                    squashfs   92M   92M     0 100% /snap/lxd/32662
+/dev/loop1                    squashfs   51M   51M     0 100% /snap/snapd/25202
+/dev/loop4                    squashfs   51M   51M     0 100% /snap/snapd/25577
+/dev/loop5                    squashfs   64M   64M     0 100% /snap/core20/2682
+/dev/loop2                    squashfs   92M   92M     0 100% /snap/lxd/36554
+/dev/loop0                    squashfs   64M   64M     0 100% /snap/core20/2686
+tmpfs                         tmpfs     394M     0  394M   0% /run/user/1004
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+65G	/
+6.7G	/home
+12G	/var
+6.9G	/var/www
+
+===== USO DE INODOS =====
+Filesystem                    Inodes IUsed IFree IUse% Mounted on
+udev                            481K   439  481K    1% /dev
+tmpfs                           492K   763  491K    1% /run
+/dev/mapper/culturas--vg-root    13M  498K   12M    4% /
+tmpfs                           492K     1  492K    1% /dev/shm
+tmpfs                           492K     4  492K    1% /run/lock
+tmpfs                           492K    18  492K    1% /sys/fs/cgroup
+/dev/sda1                       122K   320  122K    1% /boot
+tmpfs                           492K    22  492K    1% /run/user/1003
+/dev/loop7                       815   815     0  100% /snap/lxd/32662
+/dev/loop1                       616   616     0  100% /snap/snapd/25202
+/dev/loop4                       617   617     0  100% /snap/snapd/25577
+/dev/loop5                       12K   12K     0  100% /snap/core20/2682
+/dev/loop2                       815   815     0  100% /snap/lxd/36554
+/dev/loop0                       12K   12K     0  100% /snap/core20/2686
+tmpfs                           492K    22  492K    1% /run/user/1004
+
+########################################
+ SERVIDOR: emunoz@172.17.175.204
+ FECHA: vie 26 dic 2025 14:29:41 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-tainacanMusiteca 5.10.0-31-amd64 #1 SMP Debian 5.10.221-1 (2024-07-14) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             1.9G      0  1.9G   0% /dev
+tmpfs            392M   656K  392M   1% /run
+/dev/sda1        9.4G   1.6G  7.4G  18% /
+tmpfs            2.0G      0  2.0G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda5        3.4G   203M  3.0G   7% /home
+/dev/sda7        657M   176K  609M   1% /tmp
+/dev/sda8         35G    11G   23G  33% /var
+tmpfs            392M      0  392M   0% /run/user/0
+tmpfs            392M      0  392M   0% /run/user/1002
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME    SIZE TYPE MOUNTPOINT
+sda      50G disk 
+├─sda1  9.6G part /
+├─sda2    1K part 
+├─sda5  3.5G part /home
+├─sda6  976M part [SWAP]
+├─sda7  685M part /tmp
+└─sda8 35.2G part /var
+sr0     389M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   1.9G      0  1.9G   0% /dev
+tmpfs          tmpfs      392M   656K  392M   1% /run
+/dev/sda1      ext4       9.4G   1.6G  7.4G  18% /
+tmpfs          tmpfs      2.0G      0  2.0G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda5      ext4       3.4G   203M  3.0G   7% /home
+/dev/sda7      ext4       657M   176K  609M   1% /tmp
+/dev/sda8      ext4        35G    11G   23G  33% /var
+tmpfs          tmpfs      392M      0  392M   0% /run/user/0
+tmpfs          tmpfs      392M      0  392M   0% /run/user/1002
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+12G	/
+203M	/home
+9.6G	/var
+8.1G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              486K     346    486K    1% /dev
+tmpfs             490K     564    490K    1% /run
+/dev/sda1         617K     44K    573K    8% /
+tmpfs             490K       1    490K    1% /dev/shm
+tmpfs             490K       3    490K    1% /run/lock
+/dev/sda5         226K    2.2K    224K    1% /home
+/dev/sda7          43K      30     43K    1% /tmp
+/dev/sda8         2.3M     88K    2.2M    4% /var
+tmpfs              98K      12     98K    1% /run/user/0
+tmpfs              98K      12     98K    1% /run/user/1002
+
+########################################
+ SERVIDOR: emunoz@172.17.175.105
+ FECHA: vie 26 dic 2025 14:30:36 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-tainacanacervosSC 5.10.0-23-amd64 #1 SMP Debian 5.10.179-1 (2023-05-12) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             7.8G      0  7.8G   0% /dev
+tmpfs            1.6G   684K  1.6G   1% /run
+/dev/sda1         23G   1.7G   20G   8% /
+tmpfs            7.9G      0  7.9G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda7        1.8G    64K  1.7G   1% /tmp
+/dev/sda5        9.1G   911M  7.7G  11% /home
+/dev/sda8        457G    14G  420G   4% /var
+tmpfs            1.6G      0  1.6G   0% /run/user/0
+tmpfs            1.6G      0  1.6G   0% /run/user/1004
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME     SIZE TYPE MOUNTPOINT
+sda      500G disk 
+├─sda1  23.3G part /
+├─sda2     1K part 
+├─sda5   9.3G part /home
+├─sda6   976M part [SWAP]
+├─sda7   1.9G part /tmp
+└─sda8 464.6G part /var
+sr0      379M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   7.8G      0  7.8G   0% /dev
+tmpfs          tmpfs      1.6G   684K  1.6G   1% /run
+/dev/sda1      ext4        23G   1.7G   20G   8% /
+tmpfs          tmpfs      7.9G      0  7.9G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda7      ext4       1.8G    64K  1.7G   1% /tmp
+/dev/sda5      ext4       9.1G   911M  7.7G  11% /home
+/dev/sda8      ext4       457G    14G  420G   4% /var
+tmpfs          tmpfs      1.6G      0  1.6G   0% /run/user/0
+tmpfs          tmpfs      1.6G      0  1.6G   0% /run/user/1004
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+15G	/
+911M	/home
+12G	/var
+8.9G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              2.0M     346    2.0M    1% /dev
+tmpfs             2.0M     573    2.0M    1% /run
+/dev/sda1         1.5M     48K    1.5M    4% /
+tmpfs             2.0M       1    2.0M    1% /dev/shm
+tmpfs             2.0M       3    2.0M    1% /run/lock
+/dev/sda7         120K      26    120K    1% /tmp
+/dev/sda5         597K    8.0K    589K    2% /home
+/dev/sda8          30M     56K     29M    1% /var
+tmpfs             400K      22    400K    1% /run/user/0
+tmpfs             400K      18    400K    1% /run/user/1004
+
+########################################
+ SERVIDOR: emunoz@172.17.175.225
+ FECHA: vie 26 dic 2025 14:30:52 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-tainacanoirignal 5.10.0-30-amd64 #1 SMP Debian 5.10.218-1 (2024-06-01) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             1.9G      0  1.9G   0% /dev
+tmpfs            392M   684K  392M   1% /run
+/dev/sda1         23G   4.6G   18G  21% /
+tmpfs            2.0G      0  2.0G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda5        9.1G   3.4G  5.3G  39% /home
+/dev/sda8        113G    32G   75G  30% /var
+/dev/sda7        1.7G   5.5M  1.6G   1% /tmp
+tmpfs            392M      0  392M   0% /run/user/1001
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME     SIZE TYPE MOUNTPOINT
+sda      150G disk 
+├─sda1  23.3G part /
+├─sda2     1K part 
+├─sda5   9.3G part /home
+├─sda6   976M part [SWAP]
+├─sda7   1.8G part /tmp
+└─sda8 114.7G part /var
+sr0      389M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   1.9G      0  1.9G   0% /dev
+tmpfs          tmpfs      392M   684K  392M   1% /run
+/dev/sda1      ext4        23G   4.6G   18G  21% /
+tmpfs          tmpfs      2.0G      0  2.0G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda5      ext4       9.1G   3.4G  5.3G  39% /home
+/dev/sda8      ext4       113G    32G   75G  30% /var
+/dev/sda7      ext4       1.7G   5.5M  1.6G   1% /tmp
+tmpfs          tmpfs      392M      0  392M   0% /run/user/1001
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+34G	/
+2.7G	/home
+27G	/var
+21G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              486K     346    486K    1% /dev
+tmpfs             490K     570    490K    1% /run
+/dev/sda1         1.5M    139K    1.4M   10% /
+tmpfs             490K       1    490K    1% /dev/shm
+tmpfs             490K       3    490K    1% /run/lock
+/dev/sda5         597K     52K    545K    9% /home
+/dev/sda8         7.2M    270K    7.0M    4% /var
+/dev/sda7         113K    1.8K    111K    2% /tmp
+tmpfs              98K      94     98K    1% /run/user/1001
+
+########################################
+ SERVIDOR: emunoz@172.17.175.129
+ FECHA: vie 26 dic 2025 14:31:16 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-tainacanferrocarriles 5.10.0-26-amd64 #1 SMP Debian 5.10.197-1 (2023-09-29) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             1.9G      0  1.9G   0% /dev
+tmpfs            392M   652K  392M   1% /run
+/dev/sda1         19G   1.6G   16G  10% /
+tmpfs            2.0G      0  2.0G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda7        1.2G    60K  1.1G   1% /tmp
+/dev/sda5        6.4G   203M  5.9G   4% /home
+/dev/sda8         71G   9.5G   58G  15% /var
+tmpfs            392M      0  392M   0% /run/user/0
+tmpfs            392M      0  392M   0% /run/user/1000
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME    SIZE TYPE MOUNTPOINT
+sda     100G disk 
+├─sda1 18.8G part /
+├─sda2    1K part 
+├─sda5  6.6G part /home
+├─sda6  976M part [SWAP]
+├─sda7  1.2G part /tmp
+└─sda8 72.5G part /var
+sr0     379M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   1.9G      0  1.9G   0% /dev
+tmpfs          tmpfs      392M   652K  392M   1% /run
+/dev/sda1      ext4        19G   1.6G   16G  10% /
+tmpfs          tmpfs      2.0G      0  2.0G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda7      ext4       1.2G    60K  1.1G   1% /tmp
+/dev/sda5      ext4       6.4G   203M  5.9G   4% /home
+/dev/sda8      ext4        71G   9.5G   58G  15% /var
+tmpfs          tmpfs      392M      0  392M   0% /run/user/0
+tmpfs          tmpfs      392M      0  392M   0% /run/user/1000
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+9.5G	/
+203M	/home
+7.7G	/var
+4.9G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              486K     344    486K    1% /dev
+tmpfs             490K     561    490K    1% /run
+/dev/sda1         1.2M     42K    1.2M    4% /
+tmpfs             490K       1    490K    1% /dev/shm
+tmpfs             490K       3    490K    1% /run/lock
+/dev/sda7          76K      25     76K    1% /tmp
+/dev/sda5         422K    2.1K    420K    1% /home
+/dev/sda8         4.6M     76K    4.5M    2% /var
+tmpfs              98K      20     98K    1% /run/user/0
+tmpfs              98K      18     98K    1% /run/user/1000
+
+########################################
+ SERVIDOR: emunoz@172.17.175.171
+ FECHA: vie 26 dic 2025 14:31:27 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-reporadioeducacion 5.10.0-29-amd64 #1 SMP Debian 5.10.216-1 (2024-05-03) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             1.9G      0  1.9G   0% /dev
+tmpfs            392M   640K  392M   1% /run
+/dev/sda1         15G   1.8G   13G  13% /
+tmpfs            2.0G      0  2.0G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda5        5.2G   203M  4.8G   5% /home
+/dev/sda7        964M    25M  874M   3% /tmp
+/dev/sda8         57G   8.7G   45G  17% /var
+tmpfs            392M      0  392M   0% /run/user/0
+tmpfs            392M      0  392M   0% /run/user/1001
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME    SIZE TYPE MOUNTPOINT
+sda      80G disk 
+├─sda1 15.1G part /
+├─sda2    1K part 
+├─sda5  5.4G part /home
+├─sda6  976M part [SWAP]
+├─sda7  998M part /tmp
+└─sda8 57.6G part /var
+sr0    1024M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   1.9G      0  1.9G   0% /dev
+tmpfs          tmpfs      392M   640K  392M   1% /run
+/dev/sda1      ext4        15G   1.8G   13G  13% /
+tmpfs          tmpfs      2.0G      0  2.0G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda5      ext4       5.2G   203M  4.8G   5% /home
+/dev/sda7      ext4       964M    25M  874M   3% /tmp
+/dev/sda8      ext4        57G   8.7G   45G  17% /var
+tmpfs          tmpfs      392M      0  392M   0% /run/user/0
+tmpfs          tmpfs      392M      0  392M   0% /run/user/1001
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+8.1G	/
+203M	/home
+6.2G	/var
+4.9G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              486K     343    486K    1% /dev
+tmpfs             490K     554    490K    1% /run
+/dev/sda1         971K     49K    922K    6% /
+tmpfs             490K       1    490K    1% /dev/shm
+tmpfs             490K       3    490K    1% /run/lock
+/dev/sda5         344K    2.1K    342K    1% /home
+/dev/sda7          63K     442     62K    1% /tmp
+/dev/sda8         3.7M     94K    3.6M    3% /var
+tmpfs              98K      12     98K    1% /run/user/0
+tmpfs              98K      11     98K    1% /run/user/1001
+
+########################################
+ SERVIDOR: desarrollo@172.17.175.184
+ FECHA: vie 26 dic 2025 14:31:47 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 24.04.2 LTS (GNU/Linux 6.8.0-60-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of vie 26 dic 2025 20:32:28 UTC
+
+  System load:    0.0              Processes:               228
+  Usage of /home: 0.0% of 1.90GB   Users logged in:         0
+  Memory usage:   12%              IPv4 address for ens160: 172.17.175.184
+  Swap usage:     0%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+El mantenimiento de seguridad expandido para Applications está desactivado
+
+Se pueden aplicar 104 actualizaciones de forma inmediata.
+1 de estas es una actualización de seguridad estándar.
+Para ver estas actualizaciones adicionales, ejecute: apt list --upgradable
+
+3 actualizaciones de seguridad adicionales se pueden aplicar con ESM Apps.
+Aprenda más sobre cómo activar el servicio ESM Apps at https://ubuntu.com/esm
+
+
+*** Es necesario reiniciar el sistema ***
+===== USO DE DISCOS (df -h) =====
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           795M  1,2M  794M   1% /run
+/dev/sda3        66G   13G   50G  21% /
+tmpfs           3,9G     0  3,9G   0% /dev/shm
+tmpfs           5,0M     0  5,0M   0% /run/lock
+/dev/sda2       2,0G  132K  1,8G   1% /home
+tmpfs           795M   12K  795M   1% /run/user/1003
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME    SIZE TYPE MOUNTPOINT
+sda      70G disk 
+├─sda1    1M part 
+├─sda2    2G part /home
+└─sda3   67G part /
+sr0    1024M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+Filesystem     Type   Size  Used Avail Use% Mounted on
+tmpfs          tmpfs  795M  1,2M  794M   1% /run
+/dev/sda3      ext4    66G   13G   50G  21% /
+tmpfs          tmpfs  3,9G     0  3,9G   0% /dev/shm
+tmpfs          tmpfs  5,0M     0  5,0M   0% /run/lock
+/dev/sda2      ext4   2,0G  132K  1,8G   1% /home
+tmpfs          tmpfs  795M   12K  795M   1% /run/user/1003
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+13G	/
+80K	/home
+5,1G	/var
+4,1G	/var/www
+
+===== USO DE INODOS =====
+Filesystem     Inodes IUsed IFree IUse% Mounted on
+tmpfs            993K   751  993K    1% /run
+/dev/sda3        4,2M  160K  4,1M    4% /
+tmpfs            993K     1  993K    1% /dev/shm
+tmpfs            993K     4  993K    1% /run/lock
+/dev/sda2        128K    43  128K    1% /home
+tmpfs            199K    32  199K    1% /run/user/1003
+
+########################################
+ SERVIDOR: emunoz@172.17.175.91
+ FECHA: vie 26 dic 2025 14:33:03 CST
+########################################
+
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Linux sc-sitiosymonumentos 5.10.0-30-amd64 #1 SMP Debian 5.10.218-1 (2024-06-01) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+===== USO DE DISCOS (df -h) =====
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+udev             7.8G      0  7.8G   0% /dev
+tmpfs            1.6G   708K  1.6G   1% /run
+/dev/sda1         23G   3.8G   18G  18% /
+tmpfs            7.9G      0  7.9G   0% /dev/shm
+tmpfs            5.0M      0  5.0M   0% /run/lock
+/dev/sda8        457G   231G  203G  54% /var
+/dev/sda7        1.8G    81M  1.7G   5% /tmp
+/dev/sda5        9.1G   4.2G  4.4G  49% /home
+tmpfs            1.6G      0  1.6G   0% /run/user/1003
+tmpfs            1.6G      0  1.6G   0% /run/user/1004
+
+===== DISCOS Y PARTICIONES (lsblk) =====
+NAME     SIZE TYPE MOUNTPOINT
+sda      500G disk 
+├─sda1  23.3G part /
+├─sda2     1K part 
+├─sda5   9.3G part /home
+├─sda6   976M part [SWAP]
+├─sda7   1.9G part /tmp
+└─sda8 464.6G part /var
+sr0      379M rom  
+
+===== SISTEMAS DE ARCHIVOS (df -Th) =====
+S.ficheros     Tipo     Tamaño Usados  Disp Uso% Montado en
+udev           devtmpfs   7.8G      0  7.8G   0% /dev
+tmpfs          tmpfs      1.6G   708K  1.6G   1% /run
+/dev/sda1      ext4        23G   3.8G   18G  18% /
+tmpfs          tmpfs      7.9G      0  7.9G   0% /dev/shm
+tmpfs          tmpfs      5.0M      0  5.0M   0% /run/lock
+/dev/sda8      ext4       457G   231G  203G  54% /var
+/dev/sda7      ext4       1.8G    81M  1.7G   5% /tmp
+/dev/sda5      ext4       9.1G   4.2G  4.4G  49% /home
+tmpfs          tmpfs      1.6G      0  1.6G   0% /run/user/1003
+tmpfs          tmpfs      1.6G      0  1.6G   0% /run/user/1004
+
+===== USO DE DIRECTORIOS IMPORTANTES =====
+221G	/
+4.2G	/home
+213G	/var
+209G	/var/www
+
+===== USO DE INODOS =====
+S.ficheros     Nodos-i NUsados NLibres NUso% Montado en
+udev              2.0M     348    2.0M    1% /dev
+tmpfs             2.0M     598    2.0M    1% /run
+/dev/sda1         1.5M     69K    1.4M    5% /
+tmpfs             2.0M       1    2.0M    1% /dev/shm
+tmpfs             2.0M       3    2.0M    1% /run/lock
+/dev/sda8          30M    2.6M     27M    9% /var
+/dev/sda7         120K      50    120K    1% /tmp
+/dev/sda5         597K    3.7K    593K    1% /home
+tmpfs             400K      18    400K    1% /run/user/1003
+tmpfs             400K      18    400K    1% /run/user/1004
+
+########################################
+ SERVIDOR: sitiosymonumentos@172.17.175.201
+ FECHA: vie 26 dic 2025 14:35:35 CST
+########################################
+
+❌ ERROR: No fue posible conectar al servidor
+Posibles causas:
+- Host apagado
+- SSH no disponible
+- Credenciales incorrectas
+- Firewall o red
+
+======== FIN DEL REPORTE ========
