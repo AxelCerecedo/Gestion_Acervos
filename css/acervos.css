@@ -1,0 +1,385 @@
+/* ==========================================================
+   1. BASE
+========================================================== */
+body {
+  display: none;
+}
+
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    padding: 20px;
+    background-color: #f4f4f4;
+    font-family: 'Segoe UI', sans-serif;
+    color: #000;
+}
+
+main.loading-active {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* ==========================================================
+   2. HEADER
+========================================================== */
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.logo {
+    max-height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+.encabezado {
+    background-color: #7c1225;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    padding: 0.75rem 1rem;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.titulo-principal {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.subtitulo {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #f0dede;
+}
+
+/* ==========================================================
+   3. NAVBAR
+========================================================== */
+.navbar-roja {
+    background-color: #7c1225;
+    border-radius: 8px;
+    padding: 1.2rem 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.navbar-roja .nav-link {
+    color: #f0dede;
+    transition: color 0.3s;
+}
+
+.navbar-roja .nav-link:hover {
+    color: #fff;
+}
+
+/* ==========================================================
+   4. INTRO CARD
+========================================================== */
+.intro-card {
+    background: #fff;
+    border-radius: 15px;
+    border-left: 8px solid #7c1225;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.dashboard-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #7c1225;
+}
+
+.dashboard-subtitle {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    color: #555;
+    font-style: italic;
+}
+
+/* ==========================================================
+   5. TARJETAS (SUMMARY + GENERAL)
+========================================================== */
+.summary-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    min-height: 140px;
+    background: linear-gradient(135deg, #f9f9f9, #fff);
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.summary-card h5 {
+    font-weight: 800;
+    color: #7c1225;
+    margin-bottom: 0.5rem;
+}
+
+.summary-card h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Tarjetas con alineación izquierda */
+.summary-card.align-start {
+    align-items: flex-start;
+}
+
+/* --- Tarjeta de Elementos Eliminados --- */
+#deleted-items-card {
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#deleted-items-card:not(.is-loading):hover {
+    background-color: #fcebeb;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#deleted-items-card.is-loading {
+    background-color: #f9f9f9;
+    cursor: wait;
+}
+
+/* ==========================================================
+   6. COLECCIONES
+========================================================== */
+.collection-card {
+    border: 2px solid #7c1225;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.collection-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+}
+
+.collection-card-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+/* ==========================================================
+   7. ITEMS
+========================================================== */
+.item-card {
+    border: 2px solid #7c1225;
+    border-radius: 12px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    flex: 0 0 200px;
+    max-width: 200px;
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+}
+
+.item-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-bottom: 1px solid #ddd;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.item-card .card-body {
+    padding: 0.8rem;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.item-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #7c1225;
+    margin-bottom: 0.3rem;
+}
+
+/* LISTA DE ITEMS */
+#items-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* BOTÓN DE VOLVER */
+#back-to-collections {
+    background-color: #7c1225;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#back-to-collections:hover {
+    background-color: #a01a38;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================
+   8. ÚLTIMOS ELEMENTOS AGREGADOS
+========================================================== */
+#last-added-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Cards más grandes */
+#last-added-items .item-card {
+    flex: 0 0 320px;
+    max-width: 320px;
+}
+
+#last-added-items .item-card-image {
+    height: 220px;
+}
+
+/* Título alineado a la izquierda */
+#last-added-section .card-title {
+    text-align: left;
+    align-self: flex-start;
+}
+
+/* ==========================================================
+   9. FOOTER
+========================================================== */
+/* Footer */
+.main-footer {
+  text-align: center;
+  background-color: #5e0e1d;
+  color: #fff;
+  padding: 25px 0;
+  font-size: 20px;
+  width: 100vw;
+  flex-shrink: 0;
+  margin-top: 30px;
+  margin-left: -20px;
+}
+
+.footer-logo {
+    max-height: 90px;
+    width: auto;
+    margin-bottom: 10px;
+}
+
+/* ==========================================================
+   10. RESPONSIVE
+========================================================== */
+
+@media(max-width: 992px) {
+    #items-list .item-card,
+    #last-added-items .item-card {
+        flex: 0 0 150px;
+        max-width: 150px;
+    }
+}
+
+@media(max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .encabezado {
+        margin: 10px 0;
+    }
+
+    #items-list .item-card,
+    #last-added-items .item-card {
+        flex: 0 0 48%;
+        max-width: 48%;
+    }
+}
+
+@media(max-width: 576px) {
+    #items-list .item-card,
+    #last-added-items .item-card {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* ==========================================================
+   6. COLECCIONES (DISEÑO MANUAL CON CSS GRID)
+========================================================== */
+
+/* 1. Contenedor de la Rejilla */
+#collections-list.collections-grid {
+    display: grid;
+    /* Usa gap para el espaciado constante entre filas y columnas */
+    gap: 1.5rem; /* Un espaciado consistente, equivalente a g-5 o g-4 de Bootstrap */
+    padding: 0; /* Asegúrate de que no haya padding extra */
+}
+
+/* 2. Responsive: Definir las columnas según el tamaño de la pantalla */
+
+/* Mobile First (1 columna) */
+#collections-list.collections-grid {
+    grid-template-columns: 1fr;
+}
+
+/* Tablets (Mínimo 576px - 2 columnas) */
+@media (min-width: 576px) {
+    #collections-list.collections-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop Pequeño (Mínimo 768px - 3 columnas) */
+@media (min-width: 768px) {
+    #collections-list.collections-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Desktop Grande (Mínimo 992px - 4 columnas) */
+@media (min-width: 992px) {
+    #collections-list.collections-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Asegurar que las tarjetas dentro se ajusten al ancho de la columna */
+.collection-item-wrapper {
+    width: 100%;
+}
+.collection-card {
+    /* Eliminamos el fix de 320px que daba problemas */
+    width: 100%;
+    height: 100%;
+    /* Aseguramos que la tarjeta ocupe todo el espacio de su contenedor */
+    flex: 1 1 auto; 
+}
