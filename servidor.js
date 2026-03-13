@@ -4,6 +4,7 @@
 // ==========================
 // 1. Dependencias
 // ==========================
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
@@ -23,16 +24,17 @@ const { enviarReporteGemini } = require('./js/analytics_mailer');
 // 2. Configuración general
 // ==========================
 const app = express();
-const HOST = '0.0.0.0';
-const PORT = 3000;
+// Cargamos el host y el puerto desde el .env, con un respaldo (fallback) por si acaso.
+const HOST = process.env.HOST || '0.0.0.0';
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use(session({
-  secret: 'mi-clave-secreta-muy-segura',
+  secret: process.env.SESSION_SECRET, 
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // true si usas HTTPS
+  cookie: { secure: false } 
 }));
 
 // ==========================
@@ -61,10 +63,10 @@ const upload = multer({ storage });
 // 5. Conexión a MySQL
 // ==========================
 const db = mysql.createPool({
-  host: '127.0.0.1',
-  user: 'axel',
-  password: 'Firus021628',
-  database: 'Gestion_Acervos',
+  host: process.env.DB_HOST || '127.0.0.1', 
+  user: process.env.DB_USER,                
+  password: process.env.DB_PASS,            
+  database: process.env.DB_NAME || 'Gestion_Acervos', 
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -86,8 +88,8 @@ db.getConnection((err, conn) => {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'axelcerecedo117@gmail.com',
-    pass: 'chmd dxpn plnt bxzk' // ⚠️ mejor usar variables de entorno
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS  
   }
 });
 
@@ -97,82 +99,82 @@ const transporter = nodemailer.createTransport({
 const repositoriosWordpress = [
   {
     url: 'http://172.17.175.137/cultura',
-    user: 'AxelCere',
-    password: 'qnjr CZsm hd2W aDdn PTvQ 4J5F',
+    user: process.env.WP_CULTURA_USER,
+    password: process.env.WP_CULTURA_PASS,
     tainacanApiUrl: "http://172.17.175.137/cultura/wp-json/tainacan/v2",
   },
   {
     url: 'https://repositorio.ci.cultura.gob.mx/',
-    user: 'git-mexicana',
-    password: 'nmeV lFh4 0d6B Jw9E 7rQ9 1EkC',
+    user: process.env.WP_MEXICANA_USER,
+    password: process.env.WP_MEXICANA_PASS,
     tainacanApiUrl: "https://repositorio.ci.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://cid-albertobeltran.cultura.gob.mx/',
-    user: 'git-mexicana',
-    password: 'VNHn ryuk eLq0 G4L1 CDg9 oGO1',
+    user: process.env.WP_ALBERTO_BELTRAN_USER,
+    password: process.env.WP_ALBERTO_BELTRAN_PASS,
     tainacanApiUrl: "https://cid-albertobeltran.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://repositoriofic.festivalcervantino.gob.mx/',
-    user: 'git-mexicana',
-    password: 'b5sh xWO3 XnLO ZvjW J9fw Qt8C',
+    user: process.env.WP_FIC_USER,
+    password: process.env.WP_FIC_PASS,
     tainacanApiUrl: "https://repositoriofic.festivalcervantino.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://sitiosymonumentos.cultura.gob.mx/',
-    user: 'git-mexicana',
-    password: 'D9Cp Gd05 PLGK 34yB aEfQ 9rG5',
+    user: process.env.WP_SITIOS_MONUMENTOS_USER,
+    password: process.env.WP_SITIOS_MONUMENTOS_PASS,
     tainacanApiUrl: "https://sitiosymonumentos.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://repositoriomultimedia.cultura.gob.mx/',
-    user: 'axel-jcf',
-    password: 'ldDs j8js 8RZX wagF RoDx fPb6',
+    user: process.env.WP_MULTIMEDIA_USER,
+    password: process.env.WP_MULTIMEDIA_PASS,
     tainacanApiUrl: "https://repositoriomultimedia.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://patrimonioferrocarrilero.cultura.gob.mx/',
-    user: 'git-mexicana',
-    password: 'Rcj9 QVrp bD2A jnch NbkH 2YM0',
+    user: process.env.WP_FERROCARRIL_USER,
+    password: process.env.WP_FERROCARRIL_PASS,
     tainacanApiUrl: "https://patrimonioferrocarrilero.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://original.cultura.gob.mx/',
-    user: 'Axel',
-    password: 'ucjS iFHH YmG7 fjm8 96tq riYt',
+    user: process.env.WP_ORIGINAL_USER,
+    password: process.env.WP_ORIGINAL_PASS,
     tainacanApiUrl: "https://original.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://repositorio-inehrm.cultura.gob.mx/',
-    user: 'axel-ss',
-    password: 'qIvP hiip djYe R03d yyX5 qX66',
+    user: process.env.WP_INEHRM_USER,
+    password: process.env.WP_INEHRM_PASS,
     tainacanApiUrl: "https://repositorio-inehrm.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://mncp.cultura.gob.mx/',
-    user: 'git-mexicana',
-    password: '7qEM jba4 OqZs boOi 0Sqb R6OP',
+    user: process.env.WP_MNCP_USER,
+    password: process.env.WP_MNCP_PASS,
     tainacanApiUrl: "https://mncp.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://bibliotecamexico-monsiteca.cultura.gob.mx/',
-    user: 'git-mexicana',
-    password: 'VSQ4 QmfJ JqZF XYzA IOAP avC3',
+    user: process.env.WP_MONSITECA_USER,
+    password: process.env.WP_MONSITECA_PASS,
     tainacanApiUrl: "https://bibliotecamexico-monsiteca.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://catalogoradioeducacion.cultura.gob.mx/',
-    user: 'axel-ss',
-    password: 'r4c8 5HoS ETma 5lns caiW SjtG',
+    user: process.env.WP_RADIO_EDUCACION_USER,
+    password: process.env.WP_RADIO_EDUCACION_PASS,
     tainacanApiUrl: "https://catalogoradioeducacion.cultura.gob.mx/wp-json/tainacan/v2",
   },
   {
     url: 'https://bibliotecamexico-fondoreservado.cultura.gob.mx/',
-    user: 'git-mexicana',
-    password: 'B9K3 sPlO Mwv8 Zebk e0Ck yaNa',
+    user: process.env.WP_FONDO_RESERVADO_USER,
+    password: process.env.WP_FONDO_RESERVADO_PASS,
     tainacanApiUrl: "https://bibliotecamexico-fondoreservado.cultura.gob.mx/wp-json/tainacan/v2",
-  },
+  }
 ];
 
 // ==========================
@@ -426,7 +428,7 @@ function generarResumenVulnerabilidades(resultadoWPScan) {
  */
 function analizarSitioConWPScan(url, callback) {
     // Token por defecto o variable de entorno
-    const wpscanApiToken = process.env.WPSCAN_API_TOKEN || 'OTcA2GYXlNNLDgPb7bWaLC60isowA38y6InAVLZTc1Q';
+    const wpscanApiToken = process.env.WPSCAN_API_TOKEN;
 
     // ✅ RUTA ABSOLUTA CONFIRMADA (Solución para PM2)
     const dockerPath = '/usr/bin/docker'; 
