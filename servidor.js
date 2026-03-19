@@ -4,6 +4,7 @@
 // ==========================
 // 1. Dependencias
 // ==========================
+
 require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
@@ -13,28 +14,64 @@ const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
 const { exec } = require('child_process');
 const axios = require('axios');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session); 
 const { BetaAnalyticsDataClient } = require('@google-analytics/data');
 const { enviarRecordatorio } = require('./js/vulnerabilidades_mailer');
 const { enviarReporteGemini } = require('./js/analytics_mailer'); 
+const rateLimit = require('express-rate-limit');
 
 // ==========================
 // 2. Configuración general
 // ==========================
 const app = express();
-// Cargamos el host y el puerto desde el .env, con un respaldo (fallback) por si acaso.
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.set('trust proxy', 1); 
+
+const dominiosPermitidos = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || dominiosPermitidos.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Bloqueado por política CORS: Origen no autorizado'));
+    }
+  },
+  credentials: true 
+};
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// --- CONFIGURACIÓN DEL STORE DE SESIONES EN MYSQL ---
+const optionsDB = {
+  host: process.env.DB_HOST || '127.0.0.1',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME || 'Gestion_Acervos',
+  clearExpired: true, // Borra automáticamente las sesiones caducadas
+  checkExpirationInterval: 900000 // Revisa cada 15 minutos
+};
+
+const sessionStore = new MySQLStore(optionsDB);
+
+// Aplicamos el store a la configuración
 app.use(session({
-  secret: process.env.SESSION_SECRET, 
+  key: 'acervos_session', // Nombre de la cookie
+  secret: process.env.SESSION_SECRET,
+  store: sessionStore, // <-- Aquí le decimos que use MySQL en lugar de la RAM
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } 
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', 
+    httpOnly: true, 
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24 // La sesión dura 24 horas
+  }
 }));
 
 // ==========================
@@ -205,39 +242,65 @@ const getRepoDataById = (repoId) => {
     return repositorios.find(r => r.id === repoId) || { name: 'Repositorio Desconocido', email: 'contacto@cultura.gob.mx' };
 };
 
+// ==========================
+// LIMITADORES DE SEGURIDAD
+// ==========================
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // Ventana de tiempo: 15 minutos
+  max: 5, // Limita a cada IP a un máximo de 5 intentos por ventana
+  message: { error: "Demasiados intentos desde esta IP, por favor intenta de nuevo en 15 minutos." },
+  standardHeaders: true, 
+  legacyHeaders: false, 
+});
+
+// Lo aplicamos SOLO a las rutas sensibles (no a todo el sitio)
+app.use('/api/login', loginLimiter);
+app.use('/solicitar-reset', loginLimiter);
+
 // ------------------------------------------------------ RUTAS --------------------------------------------------- //
 
 
-// LOGIN básico (texto plano)
-app.post('/api/login', (req, res) => {
-  const { correo, password } = req.body;
-  if (!correo || !password) return res.status(400).json({ error: "Correo y contraseña son requeridos" });
+// LOGIN seguro (Texto plano rechazado, solo acepta bcrypt)
+app.post('/api/login', async (req, res) => {
+  const { correo, password } = req.body;
+  if (!correo || !password) return res.status(400).json({ error: "Correo y contraseña son requeridos" });
 
-  db.query(
-    `SELECT id, nombre, correo_electronico, rol, activo, password FROM usuarios WHERE correo_electronico = ?`,
-    [correo],
-    (err, results) => {
-      if (err) {
-        console.error("❌ Error en login:", err);
-        return res.status(500).json({ error: "Error en el servidor" });
+  db.query(
+    `SELECT id, nombre, correo_electronico, rol, activo, password FROM usuarios WHERE correo_electronico = ?`,
+    [correo],
+    async (err, results) => {
+      if (err) {
+        console.error("❌ Error en login:", err);
+        return res.status(500).json({ error: "Error en el servidor" });
+      }
+      
+      // Si no existe el correo, es más seguro dar un mensaje genérico
+      if (results.length === 0) return res.status(401).json({ error: "Credenciales incorrectas" });
+
+      const usuario = results[0];
+
+      try {
+        // 🔒 Comparamos el password que tecleó con el hash de la BD
+        const coinciden = await bcrypt.compare(password, usuario.password);
+
+        if (!coinciden) return res.status(401).json({ error: "Credenciales incorrectas" });
+        if (!usuario.activo) return res.status(403).json({ error: "Usuario inactivo" });
+
+        res.status(200).json({
+          mensaje: "Login exitoso",
+          usuario: {
+            id: usuario.id,
+            nombre: usuario.nombre,
+            correo: usuario.correo_electronico,
+            rol: usuario.rol
+          }
+        });
+      } catch (compareError) {
+        console.error("❌ Error al comparar contraseñas:", compareError);
+        res.status(500).json({ error: "Error interno al verificar credenciales" });
       }
-      if (results.length === 0) return res.status(401).json({ error: "Correo no encontrado" });
-
-      const usuario = results[0];
-      if (usuario.password !== password) return res.status(401).json({ error: "Contraseña incorrecta" });
-      if (!usuario.activo) return res.status(403).json({ error: "Usuario inactivo" });
-
-      res.status(200).json({
-        mensaje: "Login exitoso",
-        usuario: {
-          id: usuario.id,
-          nombre: usuario.nombre,
-          correo: usuario.correo_electronico,
-          rol: usuario.rol
-        }
-      });
-    }
-  );
+    }
+  );
 });
 
 
@@ -280,24 +343,24 @@ app.post('/solicitar-reset', (req, res) => {
 });
 
 // CONFIRMAR reset password
-app.post('/confirmar-reset', (req, res) => {
-  const { token, nuevaContrasena } = req.body;
+app.post('/confirmar-reset', async (req, res) => {
+  const { token, nuevaContrasena } = req.body;
 
-  db.query('SELECT * FROM usuarios WHERE token_reset = ?', [token], (err, results) => {
-    if (err) {
-      console.error("❌ Error en confirmar reset:", err);
-      return res.status(500).json({ message: 'Error al actualizar contraseña' });
-    }
-    if (results.length === 0) return res.status(400).json({ message: 'Token inválido o expirado' });
+  try {
+    const hashedPassword = await bcrypt.hash(nuevaContrasena, 10); // 🔒 Encriptar la nueva
 
-    db.query('UPDATE usuarios SET password = ?, token_reset = NULL WHERE token_reset = ?', [nuevaContrasena, token], (errUpdate) => {
-      if (errUpdate) {
-        console.error("❌ Error actualizando contraseña:", errUpdate);
-        return res.status(500).json({ message: 'Error al actualizar contraseña' });
-      }
-      res.json({ message: 'Contraseña actualizada correctamente' });
-    });
-  });
+    db.query('SELECT * FROM usuarios WHERE token_reset = ?', [token], (err, results) => {
+      if (err) return res.status(500).json({ message: 'Error al actualizar contraseña' });
+      if (results.length === 0) return res.status(400).json({ message: 'Token inválido o expirado' });
+
+      db.query('UPDATE usuarios SET password = ?, token_reset = NULL WHERE token_reset = ?', [hashedPassword, token], (errUpdate) => {
+        if (errUpdate) return res.status(500).json({ message: 'Error al actualizar contraseña' });
+        res.json({ message: 'Contraseña actualizada correctamente' });
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error interno al procesar la nueva contraseña' });
+  }
 });
 
 //---------------------------------------------------------------------------------------------------
@@ -715,28 +778,36 @@ app.get('/api/usuarios/:id', (req, res) => {
   });
 });
 
-// Crear usuario
-app.post('/api/usuarios', upload.single('foto_perfil'), (req, res) => {
-  const { nombre, correo, password, rol, activo } = req.body;
-  const foto_perfil = req.file ? `Imagenes/Perfiles/${req.file.filename}` : null;
+// Crear usuario (Con contraseña encriptada)
+app.post('/api/usuarios', upload.single('foto_perfil'), async (req, res) => {
+  const { nombre, correo, password, rol, activo } = req.body;
+  const foto_perfil = req.file ? `Imagenes/Perfiles/${req.file.filename}` : null;
 
-  if (!nombre || !correo || !password || !rol) {
-    return res.status(400).json({ error: 'Faltan datos para crear usuario' });
+  if (!nombre || !correo || !password || !rol) {
+    return res.status(400).json({ error: 'Faltan datos para crear usuario' });
+  }
+
+  const activoBool = activo === 'true' || activo === true ? 1 : 0;
+
+  try {
+    // 🔒 Encriptamos el password antes de hacer el INSERT
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.query(
+      'INSERT INTO usuarios (nombre, correo_electronico, password, rol, activo, foto_perfil) VALUES (?, ?, ?, ?, ?, ?)',
+      [nombre, correo, hashedPassword, rol, activoBool, foto_perfil], // 👈 Pasamos el hashedPassword
+      (err, result) => {
+        if (err) {
+          console.error('❌ Error creando usuario:', err);
+          return res.status(500).json({ error: 'Error al crear usuario' });
+        }
+        res.json({ message: 'Usuario creado correctamente', id: result.insertId });
+      }
+    );
+  } catch (hashError) {
+    console.error('❌ Error al encriptar contraseña:', hashError);
+    res.status(500).json({ error: 'Error interno al procesar la contraseña' });
   }
-
-  const activoBool = activo === 'true' || activo === true ? 1 : 0;
-
-  db.query(
-    'INSERT INTO usuarios (nombre, correo_electronico, password, rol, activo, foto_perfil) VALUES (?, ?, ?, ?, ?, ?)',
-    [nombre, correo, password, rol, activoBool, foto_perfil],
-    (err, result) => {
-      if (err) {
-        console.error('❌ Error creando usuario:', err);
-        return res.status(500).json({ error: 'Error al crear usuario' });
-      }
-      res.json({ message: 'Usuario creado correctamente', id: result.insertId });
-    }
-  );
 });
 
 // Actualizar usuario (nombre, correo, rol general, foto)
@@ -867,39 +938,38 @@ app.post('/api/usuarios/:id/toggle-activo', (req, res) => {
   });
 });
 
-// Resetear contraseña usuario (genera temporal y manda correo)
-app.post('/api/usuarios/:id/reset-password', (req, res) => {
-  const id = req.params.id;
-  const tempPass = uuidv4().slice(0, 8);
+// Resetear contraseña usuario (genera temporal, la encripta en BD y manda texto plano por correo)
+app.post('/api/usuarios/:id/reset-password', async (req, res) => {
+  const id = req.params.id;
+  const tempPass = uuidv4().slice(0, 8); // Contraseña en texto plano para el correo
 
-  db.query('SELECT correo_electronico FROM usuarios WHERE id = ?', [id], (err, results) => {
-    if (err || results.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+  try {
+    const hashedTempPass = await bcrypt.hash(tempPass, 10); // 🔒 Hash para la BD
 
-    const email = results[0].correo_electronico;
+    db.query('SELECT correo_electronico FROM usuarios WHERE id = ?', [id], (err, results) => {
+      if (err || results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    db.query('UPDATE usuarios SET password = ? WHERE id = ?', [tempPass, id], (errUpdate) => {
-      if (errUpdate) {
-        return res.status(500).json({ error: 'Error actualizando contraseña' });
-      }
+      const email = results[0].correo_electronico;
 
-      const mailOptions = {
-        from: 'axelcerecedo117@gmail.com',
-        to: email,
-        subject: 'Contraseña temporal',
-        html: `<p>Tu nueva contraseña temporal es: <strong>${tempPass}</strong></p><p>Por favor cámbiala al ingresar.</p>`
-      };
+      db.query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedTempPass, id], (errUpdate) => {
+        if (errUpdate) return res.status(500).json({ error: 'Error actualizando contraseña' });
 
-      transporter.sendMail(mailOptions, (errMail) => {
-        if (errMail) {
-          console.error('❌ Error enviando correo reset:', errMail);
-          return res.status(500).json({ error: 'Error enviando correo' });
-        }
-        res.json({ message: 'Contraseña reseteada y enviada por correo' });
-      });
-    });
-  });
+        const mailOptions = {
+          from: process.env.EMAIL_USER, // 👈 Aprovecho para poner tu variable de entorno
+          to: email,
+          subject: 'Contraseña temporal',
+          html: `<p>Tu nueva contraseña temporal es: <strong>${tempPass}</strong></p><p>Por favor cámbiala al ingresar.</p>`
+        };
+
+        transporter.sendMail(mailOptions, (errMail) => {
+          if (errMail) return res.status(500).json({ error: 'Error enviando correo' });
+          res.json({ message: 'Contraseña reseteada y enviada por correo' });
+        });
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error procesando la contraseña temporal' });
+  }
 });
 
 app.get('/api/usuarios/:id/historial', (req, res) => {
@@ -952,29 +1022,27 @@ app.delete('/api/usuarios/:id', (req, res) => {
 
 
 // Cambiar contraseña desde Mi Perfil
-// Cambiar contraseña desde Mi Perfil
-app.put('/api/usuarios/:id/cambiar-password', (req, res) => {
-  const usuarioId = req.params.id;
-  const { nuevaPassword } = req.body;
+app.put('/api/usuarios/:id/cambiar-password', async (req, res) => {
+  const usuarioId = req.params.id;
+  const { nuevaPassword } = req.body;
 
-  if (!nuevaPassword) {
-    return res.status(400).json({ error: 'Datos incompletos' });
+  if (!nuevaPassword) return res.status(400).json({ error: 'Datos incompletos' });
+  if (nuevaPassword.length < 8) return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+
+  try {
+    const hashedPassword = await bcrypt.hash(nuevaPassword, 10); // 🔒
+
+    db.query(
+      'UPDATE usuarios SET password = ? WHERE id = ?',
+      [hashedPassword, usuarioId],
+      (err) => {
+        if (err) return res.status(500).json({ error: 'Error actualizando contraseña' });
+        res.json({ message: 'Contraseña actualizada correctamente' });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno al procesar la contraseña' });
   }
-
-  if (nuevaPassword.length < 8) {
-    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
-  }
-
-  db.query(
-    'UPDATE usuarios SET password = ? WHERE id = ?',
-    [nuevaPassword, usuarioId],
-    (err) => {
-      if (err) {
-        return res.status(500).json({ error: 'Error actualizando contraseña' });
-      }
-      res.json({ message: 'Contraseña actualizada correctamente' });
-    }
-  );
 });
 
 
