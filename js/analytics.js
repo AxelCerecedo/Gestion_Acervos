@@ -14,9 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.geminiReportRepoId = null;
     window.geminiReportText = "";
 
-    const MODEL = "models/gemini-2.5-flash";
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent?key=`;
-    const API_KEY = "AIzaSyBfbb2nNqiuhwIGQ2AvumLRfMo07-Va-l8"; 
     const geminiBtn = document.getElementById("gemini-button");
     const downloadPdfButton = document.getElementById("downloadPdfButton");
 
@@ -25,8 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportsHistoryTableBody = document.getElementById('reportsHistoryTableBody');
     const historyRepoNameDisplay = document.getElementById('historyRepoNameDisplay');
     const historyLoading = document.getElementById('historyLoading');
-
-
 
     // Base URL del API backend:
       window.API_BASE_URL = "http://172.17.175.137:3000";
@@ -1145,24 +1140,30 @@ function showToast(message) {
         `;
     }
 
-    try {
-        const response = await fetch(GEMINI_API_URL + API_KEY, {
+   try {
+        // 1. Petición segura hacia tu propio backend
+        const response = await fetch('http://172.17.175.137:3000/api/ia/generar-reporte', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
+            // Enviamos únicamente el texto; el servidor pondrá la llave y el formato de Google
+            body: JSON.stringify({ prompt: prompt })
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error?.message || "Error desconocido en API Gemini");
+            throw new Error(errorData.error || "Error interno al conectar con el servidor de IA");
         }
 
         const data = await response.json();
+        
+        // La estructura de 'data' sigue siendo la misma, así que esta línea funciona perfecto
         let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No se recibió respuesta de Gemini.";
 
-        // Limpieza y formateo del texto (Igual que tu código original)
+        // ==========================================
+        // DE AQUÍ EN ADELANTE TU CÓDIGO QUEDA INTACTO
+        // ==========================================
+
+        // Limpieza y formateo del texto
         text = text.replace(/^Aquí tienes el informe.*?---\s*/i, '');
         const formatted = text
             .replace(/^### (.*$)/gim, "<h5>$1</h5>")
@@ -1173,7 +1174,7 @@ function showToast(message) {
 
         // Guardar en variables globales para el PDF
         window.geminiReportText = formatted;
-        window.geminiReportRepoId = selectedRepoId;
+        window.geminiReportRepoId = currentSelectedRepo; // Ajuste menor aquí por si usabas otra variable
 
         const reportContent = `
             <div id="pdfContent" style="font-family: 'Roboto', sans-serif; color: #333;">
@@ -1195,7 +1196,7 @@ function showToast(message) {
         downloadPdfButton.style.display = 'block';
 
     } catch (err) {
-        console.error("❌ Error Gemini:", err);
+        console.error("❌ Error en la generación del reporte:", err);
         if (modalBody) {
             modalBody.innerHTML = `
                 <div class="alert alert-danger">
@@ -1206,7 +1207,7 @@ function showToast(message) {
         }
         downloadPdfButton.style.display = 'none';
     }
-});
+}); 
 }
        // ===========================================
     // 🚀 Funcionalidad de Reportes de Gemini
