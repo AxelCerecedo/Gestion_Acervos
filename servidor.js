@@ -592,36 +592,34 @@ app.get('/api/escaneos/:id', (req, res) => {
 });
 
 // --- OBTENER PLUGINS DE WORDPRESS ---
+// --- OBTENER PLUGINS DE WORDPRESS ---
 app.get('/api/plugins-live/:id', async (req, res) => {
     const id = req.params.id;
 
-    // 1. Busca el repositorio en la base de datos para obtener su URL
     db.query('SELECT id, direccion FROM registros WHERE id = ?', [id], async (err, repos) => {
         if (err || repos.length === 0) {
             return res.status(err ? 500 : 404).json({ success: false, msg: err ? 'Error de base de datos.' : 'Repositorio no encontrado.' });
         }
 
         const url_base = repos[0].direccion;
-
-        // 2. Busca las credenciales de aplicación en el array
         const normalize = s => s.replace(/\/$/, '');
         const credenciales = repositoriosWordpress.find(r => normalize(r.url) === normalize(url_base));
 
-
         if (!credenciales) {
-            return res.status(404).json({ success: false, msg: 'No se encontraron credenciales de aplicación para este repositorio.' });
+            return res.status(404).json({ success: false, msg: 'No se encontraron credenciales de aplicación.' });
         }
         
         const authHeader = `Basic ${Buffer.from(`${credenciales.user}:${credenciales.password}`).toString('base64')}`;
-        const apiURL = `${url_base}/wp-json/wp/v2/plugins?per_page=100`;
+        const cleanUrlBase = url_base.replace(/\/$/, '');
+        const apiURL = `${cleanUrlBase}/wp-json/wp/v2/plugins?per_page=100`;
 
         try {
-            // 3. Consulta la API REST de WordPress para obtener la lista de plugins
+            // 3. Consulta la API REST con límite de tiempo
             const response = await axios.get(apiURL, {
-                headers: { 'Authorization': authHeader }
+                headers: { 'Authorization': authHeader },
+                timeout: 5000 // ⏱️ NUEVO: Corta la petición a los 5 segundos
             });
 
-            // 4. Procesa y formatea la respuesta
             const pluginsList = response.data.map(plugin => {
                 return {
                     id: plugin.id,
@@ -630,15 +628,21 @@ app.get('/api/plugins-live/:id', async (req, res) => {
                     version: plugin.version,
                     autor: plugin.author_name,
                     url: plugin.plugin_uri,
-                    // La API de WP no tiene "vencimiento", así que usamos la fecha de última modificación
                     ultima_actualizacion: plugin.modified_gmt ? new Date(plugin.modified_gmt).toLocaleDateString() : 'N/A'
                 };
             });
 
             res.json(pluginsList);
         } catch (error) {
-            console.error(`❌ Error al obtener plugins de ${url_base}:`, error.message);
-            res.status(500).json({ success: false, msg: 'Error al conectar con la API de WordPress.' });
+            const wpError = error.response ? JSON.stringify(error.response.data) : error.message;
+            console.error(`❌ Error al obtener plugins de ${cleanUrlBase}:`, wpError);
+            
+            // Si es un error de timeout, mandamos un código 504 (Gateway Timeout) para ser más exactos
+            const statusCode = error.code === 'ECONNABORTED' ? 504 : 500;
+            res.status(statusCode).json({ 
+                success: false, 
+                msg: 'El repositorio no respondió a tiempo o rechazó la conexión.' 
+            });
         }
     });
 });
@@ -650,14 +654,17 @@ app.get('/api/plugins-live/:id', async (req, res) => {
 app.get('/api/wordpress/users', async (req, res) => {
   try {
     const promises = repositoriosWordpress.map(repo => {
-      // Por cada repositorio, construimos la URL y el header de autenticación
       const authHeader = `Basic ${Buffer.from(`${repo.user}:${repo.password}`).toString('base64')}`;
-      const apiURL = `${repo.url}/wp-json/wp/v2/users?per_page=100&context=edit`;
+      
+      // 🛠️ SOLUCIÓN: Limpiamos la URL base antes de concatenar
+      const cleanUrl = repo.url.replace(/\/$/, '');
+      const apiURL = `${cleanUrl}/wp-json/wp/v2/users?per_page=100&context=edit`;
       
       return axios.get(apiURL, {
         headers: {
           'Authorization': authHeader,
-        }
+        },
+        timeout: 3000 // ⏱️ NUEVO: Corta la petición si el servidor no responde en 5 segundos
       })
       .then(response => {
         return response.data.map(user => ({
@@ -1023,24 +1030,46 @@ app.delete('/api/usuarios/:id', (req, res) => {
 
 // Cambiar contraseña desde Mi Perfil
 app.put('/api/usuarios/:id/cambiar-password', async (req, res) => {
-  const usuarioId = req.params.id;
-  const { nuevaPassword } = req.body;
+  const usuarioId = req.params.id;
+  const { passwordActual, nuevaPassword } = req.body;
 
-  if (!nuevaPassword) return res.status(400).json({ error: 'Datos incompletos' });
-  if (nuevaPassword.length < 8) return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+  if (!passwordActual || !nuevaPassword) {
+    return res.status(400).json({ error: 'Faltan datos. Se requiere la contraseña actual y la nueva.' });
+  }
+
+  if (nuevaPassword.length < 8) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres' });
+  }
 
   try {
-    const hashedPassword = await bcrypt.hash(nuevaPassword, 10); // 🔒
+    // 1. Buscamos al usuario en la base de datos para obtener su hash actual
+    db.query('SELECT password FROM usuarios WHERE id = ?', [usuarioId], async (err, results) => {
+      if (err) return res.status(500).json({ error: 'Error en la base de datos al buscar usuario' });
+      if (results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    db.query(
-      'UPDATE usuarios SET password = ? WHERE id = ?',
-      [hashedPassword, usuarioId],
-      (err) => {
-        if (err) return res.status(500).json({ error: 'Error actualizando contraseña' });
-        res.json({ message: 'Contraseña actualizada correctamente' });
-      }
-    );
+      const usuario = results[0];
+
+      // 2. 🔒 Comparamos la contraseña actual que escribió con el hash guardado
+      const coinciden = await bcrypt.compare(passwordActual, usuario.password);
+      
+      if (!coinciden) {
+        return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+      }
+
+      // 3. Si todo está bien, encriptamos la nueva y la guardamos
+      const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
+
+      db.query(
+        'UPDATE usuarios SET password = ? WHERE id = ?',
+        [hashedPassword, usuarioId],
+        (errUpdate) => {
+          if (errUpdate) return res.status(500).json({ error: 'Error actualizando contraseña' });
+          res.json({ message: 'Contraseña actualizada correctamente' });
+        }
+      );
+    });
   } catch (error) {
+    console.error('❌ Error interno al cambiar contraseña:', error);
     res.status(500).json({ error: 'Error interno al procesar la contraseña' });
   }
 });
@@ -2036,6 +2065,42 @@ app.post("/api/reports/resend/:reportId", async (req, res) => {
       message: "Error interno del servidor al reenviar el reporte.",
       error: error.message,
     });
+  }
+});
+
+
+// ==========================================
+// INTEGRACIÓN SEGURA CON GEMINI (IA)
+// ==========================================
+app.post('/api/ia/generar-reporte', async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'Se requiere enviar el texto (prompt) para la IA.' });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'La llave de la API de IA no está configurada en el servidor.' });
+  }
+
+  const MODEL = "models/gemini-2.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent?key=${apiKey}`;
+
+  try {
+    // Hacemos la petición a Google desde el servidor de Cultura, no desde el navegador del usuario
+    const response = await axios.post(url, {
+      contents: [{ parts: [{ text: prompt }] }]
+    }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // Devolvemos la respuesta de Gemini limpia al frontend
+    res.json(response.data);
+
+  } catch (error) {
+    console.error('❌ Error al conectar con Gemini:', error.response ? JSON.stringify(error.response.data) : error.message);
+    res.status(500).json({ error: 'Error interno al generar el análisis con IA.' });
   }
 });
 
