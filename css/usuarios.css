@@ -273,7 +273,7 @@ html, body {
   color: #333;
   font-weight: 500;
   font-family: 'Segoe UI', sans-serif;
-  position: relative; /* 👈 Línea agregada para solucionar el problema */
+  position: relative; 
 }
 
 /* Imagen redonda */
