@@ -19,6 +19,46 @@ document.addEventListener("DOMContentLoaded", () => {
         toast.show();
     }
 
+    // --- MOTOR DEL MULTI-SELECT ---
+    function inicializarMultiSelect(claseCheckboxes, idBoton, idHiddenInput) {
+        const checkboxes = document.querySelectorAll(`.${claseCheckboxes}`);
+        const btnTexto = document.getElementById(idBoton);
+        const hiddenInput = document.getElementById(idHiddenInput);
+
+        checkboxes.forEach(chk => {
+            chk.addEventListener('change', (e) => {
+                // Lógica inteligente: Si tocas "Todas las áreas", se limpian las demás
+                if (e.target.value === 'Todas las Áreas' && e.target.checked) {
+                    checkboxes.forEach(c => { if (c !== e.target) c.checked = false; });
+                } else if (e.target.checked) {
+                    const chkTodas = Array.from(checkboxes).find(c => c.value === 'Todas las Áreas');
+                    if(chkTodas) chkTodas.checked = false;
+                }
+
+                // Generar el texto separado por comas
+                const seleccionados = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+                if (seleccionados.length === 0) {
+                    btnTexto.innerText = "Seleccione las áreas...";
+                    hiddenInput.value = "";
+                } else {
+                    btnTexto.innerText = seleccionados.join(', ');
+                    hiddenInput.value = seleccionados.join(', ');
+                }
+            });
+        });
+    }
+
+    // Arrancamos los dos menús
+    inicializarMultiSelect('chk-area-registro', 'btnAlertaArea', 'alertaAreaVal');
+    inicializarMultiSelect('chk-area-edit', 'btnEditArea', 'editAreaVal');
+
+    // Función global para el botón "Listo"
+    window.cerrarDropdown = function(dropdownBtnId) {
+        const dropEl = document.getElementById(dropdownBtnId);
+        const dropdown = bootstrap.Dropdown.getInstance(dropEl) || new bootstrap.Dropdown(dropEl);
+        dropdown.hide();
+    };
+
     // --- FUNCIÓN NUEVA: CALCULAR HORAS Y MINUTOS EXACTOS ---
     function obtenerTextoTiempo(ms) {
         const esVencido = ms < 0;
@@ -64,7 +104,35 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("kpi-criticas").innerText = criticas;
         document.getElementById("kpi-altas").innerText = altas;
         document.getElementById("kpi-proceso").innerText = enProceso;
-        document.getElementById("kpi-mttr").innerText = "Eval"; 
+
+        const alertasCerradas = data.filter(a => a.estado === 'Cierre' && a.fecha_cierre);
+        
+        let textoMTTR = "0m";
+        if (alertasCerradas.length > 0) {
+            let totalMilisegundos = 0;
+            
+            alertasCerradas.forEach(a => {
+                const inicio = new Date(a.fecha_registro);
+                const fin = new Date(a.fecha_cierre);
+                totalMilisegundos += (fin - inicio);
+            });
+            
+            const promedioMs = totalMilisegundos / alertasCerradas.length;
+            const totalMinutos = Math.floor(promedioMs / (1000 * 60));
+            const horas = Math.floor(totalMinutos / 60);
+            const minutos = totalMinutos % 60;
+            
+            if (horas > 0) {
+                textoMTTR = `${horas}h ${minutos}m`;
+            } else {
+                textoMTTR = `${minutos}m`;
+            }
+        } else {
+            textoMTTR = "N/A"; 
+        }
+        
+        document.getElementById("kpi-mttr").innerText = textoMTTR;
+     
 
         const threatCounts = { 'Malware': 0, 'Phishing': 0, 'Intrusión': 0, 'Fuga de información': 0, 'Vulnerabilidad': 0 };
         data.forEach(a => { if (threatCounts[a.tipo] !== undefined) threatCounts[a.tipo]++; });
@@ -149,12 +217,13 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.appendChild(tr); 
     }
 
-    // ==========================================
+   // ==========================================
     // 2.5 LÓGICA DE FILTROS Y PAGINACIÓN
     // ==========================================
     const selectTime = document.getElementById('time-range');
     const selectSeverity = document.getElementById('severity-filter');
     const selectLimit = document.getElementById('limit-filter');
+    const selectArea = document.getElementById('filtroAreaTabla'); // 👇 1. Capturamos el nuevo filtro
     
     let alertasFiltradasActivas = [];
     let paginaActual = 1;
@@ -164,6 +233,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const timeValue = selectTime ? selectTime.value : 'today';
         const severityValue = selectSeverity ? selectSeverity.value : 'all';
+        const areaValue = selectArea ? selectArea.value : 'Todas'; // 👇 2. Leemos su valor actual
+
         const ahora = new Date();
 
         // 1. Filtramos TODA la memoria primero
@@ -176,6 +247,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (severityValue === 'media') pasaSeveridad = alerta.severidad === 'Media';
             if (severityValue === 'baja') pasaSeveridad = alerta.severidad === 'Baja';
 
+            // 👇 3. NUEVO: Filtro de Área Inteligente (Busca si el texto incluye el área seleccionada)
+            let pasaArea = true;
+            if (areaValue !== 'Todas') {
+                // String() actúa como escudo protector por si alguna alerta vieja tiene área nula
+                pasaArea = String(alerta.area).includes(areaValue); 
+            }
+
             // Filtro de Tiempo
             let pasaTiempo = true;
             const fechaAlerta = new Date(alerta.fecha_registro);
@@ -186,7 +264,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (timeValue === 'last30') pasaTiempo = diffHoras <= (24 * 30);
             if (timeValue === 'all') pasaTiempo = true;
 
-            return pasaSeveridad && pasaTiempo;
+            // 👇 4. Exigimos que pase los 3 filtros para poder mostrarse en la tabla
+            return pasaSeveridad && pasaTiempo && pasaArea;
         });
 
         // 2. Al cambiar un filtro, siempre regresamos a la página 1
@@ -195,6 +274,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 3. Los KPIs de arriba muestran los números TOTALES, no solo los de la página actual
         actualizarDashboard(alertasFiltradasActivas);
+    }
+
+    // 👇 5. IMPORTANTE: Activamos el "gatillo" para que la tabla se actualice en cuanto elijas un área
+    if (selectArea) {
+        selectArea.addEventListener('change', aplicarFiltros);
     }
 
     function dibujarTablaPaginada() {
@@ -288,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const tipoVal = document.getElementById('alertaTipo').value;
             const activoVal = document.getElementById('alertaActivo').value;
             const especifiqueVal = document.getElementById('alertaActivoEspecifique').value;
-            const areaVal = document.getElementById('alertaArea').value;
+            const areaVal = document.getElementById('alertaAreaVal').value;
             const severidadVal = document.getElementById('alertaSeveridad').value;
 
             if (!idVal || !tipoVal || !activoVal || !especifiqueVal || !areaVal || !severidadVal) {
@@ -310,6 +394,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 bootstrap.Modal.getInstance(document.getElementById('modalRegistroAlerta')).hide();
                 document.getElementById('formNuevaAlerta').reset();
+                document.querySelectorAll('.chk-area-registro').forEach(chk => chk.checked = false);
+                document.getElementById('btnAlertaArea').innerText = "Seleccione las áreas...";
+                document.getElementById('alertaAreaVal').value = "";
                 textSLA.innerText = "Pendiente"; textSLA.className = "text-danger fw-bold";
                 
                 cargarAlertas(); 
@@ -414,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const fila = e.target.closest('tr');
             
             const idAlerta = fila.cells[0].innerText;
-            const estadoActual = fila.cells[5].innerText.trim(); 
+            const estadoActual = fila.cells[6].innerText.trim(); 
 
             // 👇 LÓGICA DE FOLIO OCULTO PARA LA EDICIÓN BÁSICA
             const inputFolioOculto = document.getElementById('folioModalOculto');
@@ -434,6 +521,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // 3. Ocultar/Mostrar el botón de Guardar, Evidencias y el botón de Editar Clasificación
             const btnActualizar = document.getElementById('btnActualizarAlerta');
             if (btnActualizar) btnActualizar.style.display = modoLectura ? 'none' : 'block';
+
+            const btnDescartar = document.getElementById('btnDescartarAlerta');
+            if (btnDescartar) btnDescartar.style.display = modoLectura ? 'none' : 'inline-block';
             
             const inputEvidencias = document.getElementById('gestionarEvidencias');
             if (inputEvidencias) inputEvidencias.style.display = modoLectura ? 'none' : 'block';
@@ -587,7 +677,15 @@ document.addEventListener("DOMContentLoaded", () => {
             // Pre-cargar valores actuales en los Selects
             document.getElementById('editTipo').value = document.getElementById('gestionarTipo').innerText;
             document.getElementById('editActivo').value = document.getElementById('gestionarActivo').innerText;
-            document.getElementById('editArea').value = document.getElementById('gestionarArea').innerText;
+
+            const areaActual = document.getElementById('gestionarArea').innerText;
+            const arrayAreas = areaActual.split(',').map(a => a.trim());
+            
+            document.querySelectorAll('.chk-area-edit').forEach(chk => {
+                chk.checked = arrayAreas.includes(chk.value);
+            });
+            document.getElementById('btnEditArea').innerText = areaActual || "Seleccione áreas...";
+            document.getElementById('editAreaVal').value = areaActual || "";
             
             const sevActual = document.getElementById('gestionarSeveridad').innerText;
             const selectSev = document.getElementById('editSeveridad');
@@ -606,7 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const folio = document.getElementById('folioModalOculto').value;
         const tipo = document.getElementById('editTipo').value;
         const activo = document.getElementById('editActivo').value;
-        const area = document.getElementById('editArea').value;
+        const area = document.getElementById('editAreaVal').value; 
         const severidad = document.getElementById('editSeveridad').value;
 
         try {
@@ -754,6 +852,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
             }
         });
+
+        const badgeNotif = document.querySelector('.bi-bell-fill')?.nextElementSibling;
+        if (badgeNotif) {
+            if (alertasVencidasOPendientes > 0) {
+                badgeNotif.style.display = 'inline-block';
+                badgeNotif.innerText = alertasVencidasOPendientes;
+            } else {
+                badgeNotif.style.display = 'none';
+                lista.innerHTML = '<p class="text-center text-muted my-4">No hay recordatorios pendientes de SLA.</p>';
+            }
+        }
     }
 
     document.getElementById('modalRecordatorios')?.addEventListener('click', (e) => {
@@ -983,4 +1092,74 @@ document.addEventListener("DOMContentLoaded", () => {
             contenedor.style.visibility = 'hidden';
         });
     });
+
+
+    // ==========================================
+    // 8. DESCARTAR ALERTA (FALSO POSITIVO) - CON SWEETALERT
+    // ==========================================
+    document.getElementById('btnDescartarAlerta')?.addEventListener('click', () => {
+        const idAlerta = document.getElementById('gestionarIdAlerta').innerText;
+        
+        // 1. Alerta Elegante con SweetAlert2
+        Swal.fire({
+            title: '¿Descartar incidente?',
+            html: `Estás a punto de descartar la alerta <b>${idAlerta}</b>.<br><br> No podrás deshacer esta acción.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#7c1225', // Rojo institucional
+            cancelButtonColor: '#6c757d',  // Gris secundario
+            confirmButtonText: '<i class="bi bi-trash3-fill"></i> Sí, descartar alerta',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true // Pone el botón de cancelar a la izquierda
+        }).then(async (result) => {
+            
+            // 2. Si el usuario hace clic en "Sí, descartar"
+            if (result.isConfirmed) {
+                
+                // Preparamos los datos con el auto-llenado de descarte
+                const formData = new FormData();
+                formData.append('nuevoEstado', 'Cierre'); 
+                formData.append('sistema', document.getElementById('dic_sistema').value || 'Múltiples / No aplica');
+                formData.append('desc', 'ALERTA DESCARTADA. Se identificó como falso positivo, ruido de red o notificación no procesable.');
+                formData.append('causa', 'No aplica. Falso positivo o evento esperado.');
+                formData.append('impacto', 'Ninguno.');
+                formData.append('acciones', 'Se descarta la alerta tras el Triage inicial.');
+                formData.append('conclusion', 'Alerta descartada. No representa un riesgo para la infraestructura de la Secretaría.');
+                formData.append('recom', 'Afinar reglas de detección en el origen (opcional).');
+                formData.append('resp', document.getElementById('dic_resp').value || 'Analista SOC');
+                formData.append('vobo', document.getElementById('dic_vobo').value || 'Coordinador SOC');
+
+                try {
+                    // Enviamos la petición
+                    const response = await fetch(`http://172.17.175.137:3000/api/alertas/${idAlerta}/estado`, {
+                        method: 'PUT',
+                        body: formData 
+                    });
+
+                    const dataResult = await response.json();
+                    if (!response.ok) throw new Error(dataResult.error || "Error al descartar.");
+
+                    // Cerramos modal principal y mostramos éxito
+                    bootstrap.Modal.getInstance(document.getElementById('modalGestionarAlerta')).hide();
+                    cargarAlertas(); 
+                    
+                    Swal.fire({
+                        title: '¡Descartada!',
+                        text: `La alerta ${idAlerta} fue finalizada correctamente.`,
+                        icon: 'success',
+                        confirmButtonColor: '#7c1225'
+                    });
+                    
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message,
+                        icon: 'error',
+                        confirmButtonColor: '#7c1225'
+                    });
+                }
+            }
+        });
+    });
+
 });
