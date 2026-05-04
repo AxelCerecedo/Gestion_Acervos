@@ -1,0 +1,310 @@
+/* =========================================
+   Base y Estructura Principal
+========================================= */
+body {
+  padding: 20px;
+  background-color: #f0f2f5; /* Fondo ligeramente más oscuro para que resalte el neón */
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #1a1a1a;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.container-fluid {
+  max-width: 100%;
+  padding: 20px;
+}
+
+/* =========================================
+   Encabezado Institucional (Se mantiene formal)
+========================================= */
+.header-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.logo {
+  max-height: 60px;
+  width: auto;
+}
+
+.encabezado {
+  background-color: #7c1225;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(124, 18, 37, 0.4); /* Resplandor institucional */
+  padding: 0.75rem 1rem;
+  flex-grow: 1;
+}
+
+.encabezado > div {
+  width: 100%;
+  text-align: center;
+}
+
+.titulo-principal {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.subtitulo {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #ffcbd1;
+}
+
+/* =========================================
+   Barra de Navegación
+========================================= */
+.navbar-roja {
+  background-color: #7c1225;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(124, 18, 37, 0.3);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.navbar-roja .navbar-brand {
+  color: white;
+  font-weight: bold;
+}
+
+.navbar-roja .nav-link {
+  color: #ffffff; 
+  transition: all 0.3s ease;
+  padding: 15px 10px;
+  font-weight: 500;
+}
+
+.navbar-roja .nav-link:hover,
+.navbar-roja .nav-link.active {
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.6); /* Brillo en el texto activo */
+}
+
+.separator {
+  user-select: none;
+  opacity: 0.3;
+}
+
+/* =========================================
+   Dashboard de Alertas
+========================================= */
+.intro-card {
+  background: #ffffff;
+  border-radius: 8px;
+  border-top: 5px solid #7c1225;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #7c1225;
+  text-transform: uppercase;
+}
+
+.dashboard-subtitle {
+  color: #555;
+  font-size: 1rem;
+}
+
+/* =========================================
+   Tarjetas de Indicadores (KPIs) - ESTILO ELÉCTRICO
+========================================= */
+.alert-card {
+  border-radius: 10px;
+  border: none;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.alert-card:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+/* Degradados eléctricos y sombras resplandecientes (Glow) */
+.bg-danger { 
+  background: linear-gradient(135deg, #ff0844 0%, #ff4b2b 100%) !important; 
+  color: white !important;
+}
+.alert-card:hover.bg-danger { box-shadow: 0 10px 25px rgba(255, 8, 68, 0.5) !important; }
+
+.bg-warning { 
+  background: linear-gradient(135deg, #ff9a44 0%, #fc6076 100%) !important; 
+  color: white !important; 
+}
+.alert-card:hover.bg-warning { box-shadow: 0 10px 25px rgba(255, 154, 68, 0.5) !important; }
+
+.bg-primary { 
+  background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%) !important; 
+  color: white !important;
+}
+.alert-card:hover.bg-primary { box-shadow: 0 10px 25px rgba(0, 198, 255, 0.5) !important; }
+
+.bg-success { 
+  background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%) !important; 
+  color: white !important;
+}
+.alert-card:hover.bg-success { box-shadow: 0 10px 25px rgba(11, 163, 96, 0.5) !important; }
+
+.alert-card h2 {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Hace que los números destaquen sobre el degradado */
+}
+
+/* =========================================
+   Badges de Severidad (Efecto Neón)
+========================================= */
+.badge-critica { 
+  background-color: #ff003c; 
+  color: white; 
+  box-shadow: 0 0 10px rgba(255, 0, 60, 0.6); /* Resplandor rojo/magenta */
+  padding: 0.5em 0.8em; 
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.badge-alta { 
+  background-color: #ff7300; 
+  color: white; 
+  box-shadow: 0 0 10px rgba(255, 115, 0, 0.6); /* Resplandor naranja */
+  padding: 0.5em 0.8em; 
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.badge-media { 
+  background-color: #00e5ff; 
+  color: #003333; 
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.6); /* Resplandor cyan */
+  padding: 0.5em 0.8em; 
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.badge-baja { 
+  background-color: #00ff66; 
+  color: #003311; 
+  box-shadow: 0 0 10px rgba(0, 255, 102, 0.6); /* Resplandor verde lima */
+  padding: 0.5em 0.8em; 
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* =========================================
+   Badges de Estado (Bordes Eléctricos)
+========================================= */
+.status-analisis { 
+  border: 2px solid #00c6ff; 
+  color: #0072ff; 
+  background: rgba(0, 198, 255, 0.1); 
+  padding: 0.4em 0.8em; 
+  font-weight: 700;
+}
+.status-contencion { 
+  border: 2px solid #00ff66; 
+  color: #0ba360; 
+  background: rgba(0, 255, 102, 0.1); 
+  padding: 0.4em 0.8em; 
+  font-weight: 700;
+}
+.status-cierre { 
+  border: 2px solid #8e9eab; 
+  color: #6c757d; 
+  background: rgba(142, 158, 171, 0.1); 
+  padding: 0.4em 0.8em; 
+  font-weight: 700;
+}
+
+/* =========================================
+   Tablas y Gráficos
+========================================= */
+.table th {
+  background-color: #1a1d24; /* Un gris casi negro para contrastar con los neones */
+  color: #ffffff;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 3px solid #7c1225;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+}
+
+.table td {
+  vertical-align: middle;
+  text-align: center;
+  font-weight: 500;
+}
+
+.table-hover tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8e9eb; 
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+
+.card-header {
+  background-color: #fff;
+  border-bottom: 2px solid #f0f2f5;
+  font-weight: bold;
+}
+
+/* =========================================
+   Botones Generales
+========================================= */
+button.btn-primary {
+  background-color: #7c1225;
+  border-color: #7c1225;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+button.btn-primary:hover {
+  background-color: #5e0e1d;
+  border-color: #5e0e1d;
+  box-shadow: 0 4px 12px rgba(124, 18, 37, 0.4);
+}
+
+button.btn-outline-primary {
+  color: #7c1225;
+  border-color: #7c1225;
+  font-weight: 600;
+}
+
+button.btn-outline-primary:hover {
+  background-color: #7c1225;
+  color: white;
+  box-shadow: 0 4px 12px rgba(124, 18, 37, 0.4);
+}
+
+/* =========================================
+   Footer Institucional
+========================================= */
+.main-footer {
+  text-align: center;
+  background-color: #1a1d24; /* Combina con el header de la tabla */
+  border-top: 4px solid #7c1225;
+  color: #fff;
+  padding: 25px 0;
+  font-size: 15px;
+  width: 100vw;
+  flex-shrink: 0;
+  margin-top: 40px;
+  margin-left: -20px;
+  position: relative;
+}
+
+.footer-logo {
+  height: 90px; 
+  margin-bottom: 10px;
+}
