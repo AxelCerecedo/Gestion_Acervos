@@ -2452,15 +2452,15 @@ app.get('/api/alertas', (req, res) => {
       t.nombre AS tipo,
       a.nombre AS activo,
       i.activo_especifico AS especifique,
-      ar.nombre AS area,
+      i.areas_asignadas AS area, 
       s.nivel AS severidad,
       s.sla_horas, 
       i.fecha_registro,
+      i.fecha_cierre,  -- <--- ¡SOLO TIENES QUE AGREGAR ESTA LÍNEA!
       e.nombre AS estado
     FROM incidentes_ciberseguridad i
     LEFT JOIN cat_tipo_alerta t ON i.id_tipo = t.id_tipo
     LEFT JOIN cat_activo a ON i.id_activo = a.id_activo
-    LEFT JOIN cat_areas ar ON i.id_area = ar.id_area
     LEFT JOIN cat_severidad s ON i.id_severidad = s.id_severidad
     LEFT JOIN cat_estado e ON i.id_estado = e.id_estado
     ORDER BY i.fecha_registro DESC;
@@ -2521,25 +2521,26 @@ app.delete('/api/contactos-sla/:id', (req, res) => {
 });
 
 // ------------------------------------------------------------------------------
-// RUTA 2: Registrar una NUEVA alerta manualmente Y ENVIAR CORREO
+// RUTA 2: Registrar una NUEVA alerta manualmente Y ENVIAR CORREO (BROADCAST)
 // ------------------------------------------------------------------------------
 app.post('/api/alertas', (req, res) => {
+  // Ahora "area" será un string como "Desarrollo Web, SOC"
   const { folio, tipo, activo, especifique, area, severidad } = req.body;
 
   if (!folio || !tipo || !activo || !especifique || !area || !severidad) {
     return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
-  // 1. Guardar la alerta en MySQL
+  // 1. Guardar la alerta en MySQL (Directo como VARCHAR)
   const insertQuery = `
     INSERT INTO incidentes_ciberseguridad 
-    (folio_interno, id_tipo, id_activo, activo_especifico, id_area, id_severidad, id_estado)
+    (folio_interno, id_tipo, id_activo, activo_especifico, areas_asignadas, id_severidad, id_estado)
     VALUES (
       ?,
       (SELECT id_tipo FROM cat_tipo_alerta WHERE nombre = ? LIMIT 1),
       (SELECT id_activo FROM cat_activo WHERE nombre = ? LIMIT 1),
       ?,
-      (SELECT id_area FROM cat_areas WHERE nombre = ? LIMIT 1),
+      ?,
       (SELECT id_severidad FROM cat_severidad WHERE nivel = ? LIMIT 1),
       (SELECT id_estado FROM cat_estado WHERE nombre = 'Análisis' LIMIT 1)
     )
@@ -2554,32 +2555,15 @@ app.post('/api/alertas', (req, res) => {
 
     res.status(201).json({ mensaje: "Alerta registrada correctamente", id: results.insertId });
 
-    // 2. Lógica de Enrutamiento de Correos (Se ejecuta en segundo plano)
-    let queryCorreos;
-    let queryParams = [];
+    // 2. BROADCAST: Enviar correo a TODOS los registrados en el SLA
+    const queryCorreos = `SELECT correo FROM contactos_sla`;
 
-    if (area === 'Todas las Áreas') {
-      queryCorreos = `SELECT correo FROM contactos_sla`;
-    } else {
-      queryCorreos = `
-        SELECT c.correo 
-        FROM contactos_sla c 
-        JOIN cat_areas a ON c.id_area = a.id_area 
-        WHERE a.nombre = ?
-      `;
-      queryParams = [area];
-    }
-
-    db.query(queryCorreos, queryParams, (errCorreos, resCorreos) => {
+    db.query(queryCorreos, (errCorreos, resCorreos) => {
       if (!errCorreos && resCorreos.length > 0) {
         
-        // Unir todos los correos con comas
         const listaDestinatarios = resCorreos.map(c => c.correo).join(',');
-        
-        // Definir color de la tarjeta según la severidad
         const colorSeveridad = severidad === 'Crítica' ? '#dc3545' : severidad === 'Alta' ? '#fd7e14' : '#ffc107';
 
-        // Diseño del Correo HTML
         const htmlCorreo = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #7c1225; padding: 20px; text-align: center; color: white;">
@@ -2588,7 +2572,7 @@ app.post('/api/alertas', (req, res) => {
             </div>
             
             <div style="padding: 30px 20px; background-color: #f9f9f9;">
-              <p style="font-size: 16px; color: #333;">Se ha registrado un nuevo incidente que requiere atención por parte del área de <strong>${area}</strong>.</p>
+              <p style="font-size: 16px; color: #333;">Se ha registrado un nuevo incidente que requiere atención por parte de: <strong>${area}</strong>.</p>
               
               <div style="background-color: white; padding: 20px; border-left: 5px solid ${colorSeveridad}; border-radius: 4px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                 <p style="margin: 0 0 10px 0;"><strong>Folio:</strong> ${folio}</p>
@@ -2610,7 +2594,6 @@ app.post('/api/alertas', (req, res) => {
           </div>
         `;
 
-        // Opciones de envío
         const mailOptions = {
           from: `"Cultura" <${process.env.EMAIL_USER}>`, 
           to: listaDestinatarios, 
@@ -2618,12 +2601,11 @@ app.post('/api/alertas', (req, res) => {
           html: htmlCorreo
         };
 
-        // Enviar con Nodemailer
         transporter.sendMail(mailOptions, (error, info) => {
           if (error) {
             console.error("❌ Error al enviar correo de alerta:", error);
           } else {
-            console.log(`✅ Notificación enviada a [${area}]: ${info.response}`);
+            console.log(`✅ Notificación enviada a todos los miembros (${listaDestinatarios}): ${info.response}`);
           }
         });
       }
@@ -2739,13 +2721,14 @@ app.put('/api/alertas/:folio/basicos', (req, res) => {
     const folio = req.params.folio;
     const { tipo, activo, area, severidad } = req.body;
 
-    // Actualizamos usando subconsultas para asegurar que se guarden los IDs correctos del catálogo
+    // Actualizamos usando el nuevo nombre de columna "areas_asignadas"
+    // y guardamos el texto directamente en lugar de buscar un ID.
     const updateQuery = `
         UPDATE incidentes_ciberseguridad 
         SET 
             id_tipo = (SELECT id_tipo FROM cat_tipo_alerta WHERE nombre = ? LIMIT 1),
             id_activo = (SELECT id_activo FROM cat_activo WHERE nombre = ? LIMIT 1),
-            id_area = (SELECT id_area FROM cat_areas WHERE nombre = ? LIMIT 1),
+            areas_asignadas = ?, 
             id_severidad = (SELECT id_severidad FROM cat_severidad WHERE nivel LIKE ? LIMIT 1)
         WHERE folio_interno = ?
     `;
@@ -2770,44 +2753,57 @@ app.put('/api/alertas/:folio/basicos', (req, res) => {
 const cron = require('node-cron');
 
 // Tarea programada: Se ejecuta CADA 5 MINUTOS
+
 cron.schedule('*/5 * * * *', () => {
     console.log('--- [SGA Watchdog] Revisando estados de SLA ---');
 
-
+    // Ahora leemos el texto "areas_asignadas"
     const query = `
-        SELECT i.folio_interno, i.fecha_registro, s.nivel, s.sla_horas, ar.nombre AS area,
-               i.notif_proximo_vencer, i.notif_vencido,
-               (SELECT GROUP_CONCAT(correo) FROM contactos_sla WHERE id_area = i.id_area) AS correos
+        SELECT i.folio_interno, i.fecha_registro, s.nivel, s.sla_horas, i.areas_asignadas AS area,
+               i.notif_proximo_vencer, i.notif_vencido
         FROM incidentes_ciberseguridad i
         JOIN cat_severidad s ON i.id_severidad = s.id_severidad
-        JOIN cat_areas ar ON i.id_area = ar.id_area
         WHERE i.id_estado != (SELECT id_estado FROM cat_estado WHERE nombre = 'Cierre' LIMIT 1)
     `;
 
     db.query(query, (err, alertas) => {
         if (err) return console.error("Error en Watchdog:", err);
 
-        alertas.forEach(alerta => {
-            const inicio = new Date(alerta.fecha_registro);
-            const ahora = new Date();
-            const diferenciaHoras = (ahora - inicio) / (1000 * 60 * 60);
-            const tiempoRestante = alerta.sla_horas - diferenciaHoras;
-            const umbralAviso = alerta.sla_horas * 0.25; // El 25% del tiempo
+        // Obtenemos todos los contactos una sola vez para armar un "Directorio" en memoria
+        db.query("SELECT correo, a.nombre AS area_contacto FROM contactos_sla c JOIN cat_areas a ON c.id_area = a.id_area", (errContactos, contactosDb) => {
+            if(errContactos) return console.error("Error leyendo directorio SLA");
 
-            // 1. LÓGICA DE VENCIMIENTO (Llegó a 0 y NO se ha enviado el correo)
-            if (tiempoRestante <= 0 && alerta.notif_vencido === 0) {
-                enviarCorreoContinuidad(alerta, "ALERTA VENCIDA");
+            alertas.forEach(alerta => {
+                const inicio = new Date(alerta.fecha_registro);
+                const ahora = new Date();
+                const diferenciaHoras = (ahora - inicio) / (1000 * 60 * 60);
+                const tiempoRestante = alerta.sla_horas - diferenciaHoras;
+                const umbralAviso = alerta.sla_horas * 0.25; 
+
+
+                let correosDestino = [];
+                if (alerta.area) {
+                    // ESCUDO: Forzamos a que sea texto antes de aplicar el split
+                    const areasLista = String(alerta.area).split(',').map(a => a.trim());
+                    
+                    // Buscamos a los contactos cuya área coincida con alguna de la lista
+                    contactosDb.forEach(c => {
+                        if(areasLista.includes(c.area_contacto)) correosDestino.push(c.correo);
+                    });
+                }
                 
-                // Marcar en BD que YA se envió el de vencida
-                db.query("UPDATE incidentes_ciberseguridad SET notif_vencido = 1 WHERE folio_interno = ?", [alerta.folio_interno]);
-            }
-            // 2. LÓGICA DE PRÓXIMO A VENCER (Entró al 25% y NO se ha enviado el correo)
-            else if (tiempoRestante > 0 && tiempoRestante <= umbralAviso && alerta.notif_proximo_vencer === 0) {
-                enviarCorreoContinuidad(alerta, "PRÓXIMO A VENCER");
-                
-                // Marcar en BD que YA se envió el aviso preventivo
-                db.query("UPDATE incidentes_ciberseguridad SET notif_proximo_vencer = 1 WHERE folio_interno = ?", [alerta.folio_interno]);
-            }
+                // Unimos todos los correos sin duplicados
+                alerta.correos = [...new Set(correosDestino)].join(',');
+
+                if (tiempoRestante <= 0 && alerta.notif_vencido === 0) {
+                    enviarCorreoContinuidad(alerta, "ALERTA VENCIDA");
+                    db.query("UPDATE incidentes_ciberseguridad SET notif_vencido = 1 WHERE folio_interno = ?", [alerta.folio_interno]);
+                }
+                else if (tiempoRestante > 0 && tiempoRestante <= umbralAviso && alerta.notif_proximo_vencer === 0) {
+                    enviarCorreoContinuidad(alerta, "PRÓXIMO A VENCER");
+                    db.query("UPDATE incidentes_ciberseguridad SET notif_proximo_vencer = 1 WHERE folio_interno = ?", [alerta.folio_interno]);
+                }
+            });
         });
     });
 });
@@ -2923,7 +2919,7 @@ async function analizarCorreoConChatGPT(cuerpoCorreo, modo = "detalle", listaSis
           "categoria_maestra": "DEBE SER EXACTAMENTE UNO DE LOS NOMBRES DE LA LISTA ESTRICTA",
           "tipo": "Vulnerabilidad",
           "activo": "Aplicación/Servidor/Endpoint",
-          "area_asignada": "Desarrollo Web/Infraestructura/SOC",
+          "area_asignada": "Asigna las áreas responsables de atender esto, separadas por comas (Ej. Desarrollo Web, SOC). Opciones estrictas: Desarrollo Web, Infraestructura, Soporte Técnico, Repositorios, SOC, Todas las Áreas.",
           "severidad": "Crítica/Alta/Media/Baja",
           "especifique": "Marca afectada",
           "sistema_afectado": "Nombre de la categoría maestra",
@@ -3033,123 +3029,128 @@ async function iniciarEscuchaCorreos() {
             for (let item of mensajes) {
                 const all = item.parts.find(part => part.which === 'TEXT');
                 const id = item.attributes.uid;
-                const idHeader = "Imap-Id: "+id+"\r\n";
+                const idHeader = "Imap-Id: " + id + "\r\n";
 
-                simpleParser(idHeader + all.body, async (err, mail) => {
-                    if (err) return console.error("Error leyendo correo:", err);
-
-                    // 1. Lectura segura del remitente
-                    const asunto = mail.subject || "Sin Asunto";
-                    const textoCorreo = mail.text || "";
-                    const remitente = mail.from?.value?.[0]?.address || "remitente_desconocido@sistema.gob.mx";
-
-                    // 2. Filtro de palabras clave
-                    const palabrasClave = [
-                        'vulnerabilidad', 'alerta', 'cve', 'tlp', 'error', 
-                        'falla', 'incidente', 'brecha', 'ransomware', 
-                        'malware', 'ataque', 'sospechoso'
-                    ];
-                    const esAlerta = palabrasClave.some(palabra => 
-                        asunto.toLowerCase().includes(palabra) || 
-                        textoCorreo.toLowerCase().includes(palabra)
-                    );
-
-                    if (esAlerta) {
-                        console.log(`🚨 Incidente detectado. Iniciando Análisis en Dos Fases...`);
-
-                        // --- FASE 1: IDENTIFICAR ACTIVOS (Índice - Solo 3000 chars) ---
-                        const datosIndice = await analizarCorreoConChatGPT(textoCorreo.substring(0, 3000), "indice");
-                        const sistemasMaestros = datosIndice?.sistemas || [];
-                        console.log(`📋 Sistemas maestros identificados (${sistemasMaestros.length}): ${sistemasMaestros.join(", ")}`);
-
-                        if (sistemasMaestros.length === 0) return;
-
-                        // --- FASE 2: LLENAR Y FUSIONAR (El Cadenero Estricto) ---
-                        let mapaAlertasFinales = new Map(); 
-                        const tamanoChunk = 3500;
-
-                        for (let i = 0; i < textoCorreo.length; i += tamanoChunk) {
-                            let fragmento = textoCorreo.substring(i, i + tamanoChunk);
-                            console.log(`⏳ Procesando bloque ${i / tamanoChunk + 1}...`);
-
-                            let respuestaIA = await analizarCorreoConChatGPT(fragmento, "detalle", sistemasMaestros.join(" | "));
-                            
-                            if (respuestaIA && respuestaIA.alertas) {
-                                respuestaIA.alertas.forEach(alerta => {
-                                    const categoria = alerta.categoria_maestra;
-                                    
-                                    // 🛡️ EL CADENERO: Si la IA inventa un nombre que no está en el índice, se rechaza.
-                                    if (categoria && sistemasMaestros.includes(categoria)) {
-                                        
-                                        if (mapaAlertasFinales.has(categoria)) {
-                                            // 🔄 FUSIÓN: Si ya existía, le sumamos los nuevos CVEs en lugar de borrarlo
-                                            let existente = mapaAlertasFinales.get(categoria);
-                                            if (alerta.cves && alerta.cves !== "Ninguno") {
-                                                existente.cves = (existente.cves === "Ninguno") ? alerta.cves : existente.cves + ", " + alerta.cves;
-                                            }
-                                            mapaAlertasFinales.set(categoria, existente);
-                                        } else {
-                                            // 🆕 NUEVO: Es la primera vez que vemos este sistema maestro
-                                            mapaAlertasFinales.set(categoria, alerta);
-                                        }
-                                    }
-                                });
-                            }
-
-                            if (i + tamanoChunk < textoCorreo.length) {
-                                console.log("⏱️ Reseteando tokens (65s)...");
-                                await new Promise(r => setTimeout(r, 65000));
-                            }
+                // 👇 ENVOLVEMOS EL PARSER EN UNA PROMESA PARA QUE HAGA "FILA" 👇
+                await new Promise((resolve) => {
+                    simpleParser(idHeader + all.body, async (err, mail) => {
+                        if (err) {
+                            console.error("Error leyendo correo:", err);
+                            return resolve(); // Si hay error, pasamos al siguiente correo
                         }
 
-                        // --- FASE 3: REGISTRO FINAL ---
-                        const listaFinal = Array.from(mapaAlertasFinales.values());
-                        console.log(`✅ Análisis completo. Registrando EXACTAMENTE ${listaFinal.length} folios...`);
+                        const asunto = mail.subject || "Sin Asunto";
+                        const textoCorreo = mail.text || "";
+                        
+                        const palabrasClave = [
+                            'vulnerabilidad', 'alerta', 'cve', 'tlp', 'error', 
+                            'falla', 'incidente', 'brecha', 'ransomware', 
+                            'malware', 'ataque', 'sospechoso'
+                        ];
+                        const esAlerta = palabrasClave.some(palabra => 
+                            asunto.toLowerCase().includes(palabra) || 
+                            textoCorreo.toLowerCase().includes(palabra)
+                        );
 
-                        listaFinal.forEach((datosIA, index) => {
-                            const folioGenerado = 'SGA-ATDT-' + Date.now() + '-' + index;
+                        if (esAlerta) {
+                            console.log(`🚨 Incidente detectado en asunto: "${asunto}". Iniciando Análisis...`);
+
+                            // FASE 1: ÍNDICE
+                            const datosIndice = await analizarCorreoConChatGPT(textoCorreo.substring(0, 3000), "indice");
+                            const sistemasMaestros = datosIndice?.sistemas || [];
                             
-                            // Limpieza y límites SQL
-                            const especifique = (datosIA.especifique || "Múltiples").substring(0, 90);
-                            const sistema = (datosIA.categoria_maestra || "Desconocido").substring(0, 150); // Usamos la categoría maestra
+                            if (sistemasMaestros.length === 0) {
+                                console.log("⏭️ Falsa alarma. Pasando al siguiente correo...");
+                                return resolve(); // Pasamos al siguiente correo
+                            }
+
+                            // FASE 2: DETALLE
+                            let mapaAlertasFinales = new Map(); 
+                            const tamanoChunk = 3500;
+
+                            for (let i = 0; i < textoCorreo.length; i += tamanoChunk) {
+                                let fragmento = textoCorreo.substring(i, i + tamanoChunk);
+                                let respuestaIA = await analizarCorreoConChatGPT(fragmento, "detalle", sistemasMaestros.join(" | "));
+                                
+                                if (respuestaIA && respuestaIA.alertas) {
+                                    respuestaIA.alertas.forEach(alerta => {
+                                        const categoria = alerta.categoria_maestra;
+                                        if (categoria && sistemasMaestros.includes(categoria)) {
+                                            if (mapaAlertasFinales.has(categoria)) {
+                                                let existente = mapaAlertasFinales.get(categoria);
+                                                if (alerta.cves && alerta.cves !== "Ninguno") {
+                                                    existente.cves = (existente.cves === "Ninguno") ? alerta.cves : existente.cves + ", " + alerta.cves;
+                                                }
+                                                mapaAlertasFinales.set(categoria, existente);
+                                            } else {
+                                                mapaAlertasFinales.set(categoria, alerta);
+                                            }
+                                        }
+                                    });
+                                }
+                                
+                                // Pausa entre fragmentos del MISMO correo para cuidar la IA
+                                if (i + tamanoChunk < textoCorreo.length) {
+                                    await new Promise(r => setTimeout(r, 65000));
+                                }
+                            }
+
+                            // FASE 3: REGISTRO EN BASE DE DATOS
+                            const listaFinal = Array.from(mapaAlertasFinales.values());
                             
-                            // Asegurar que los CVEs sean un string y cortarlos para que no rompan la BD
-                            let cvesTexto = String(datosIA.cves || "Ninguno");
-                            if(cvesTexto.length > 250) cvesTexto = cvesTexto.substring(0, 245) + "..."; 
+                            // Usamos un for...of aquí también para asegurar que se guarden uno por uno en la BD
+                            for (let index = 0; index < listaFinal.length; index++) {
+                                const datosIA = listaFinal[index];
+                                const folioGenerado = 'SGA-ATDT-' + Date.now() + '-' + index;
+                                
+                                const especifique = (datosIA.especifique || "Múltiples").substring(0, 90);
+                                const sistema = (datosIA.categoria_maestra || "Desconocido").substring(0, 150);
+                                let cvesTexto = String(datosIA.cves || "Ninguno");
+                                if(cvesTexto.length > 250) cvesTexto = cvesTexto.substring(0, 245) + "..."; 
 
-                            const query = `
-                                INSERT INTO incidentes_ciberseguridad 
-                                (folio_interno, fuente_alerta, tlp_color, cves_relacionados, activo_especifico,
-                                id_tipo, id_activo, id_area, id_severidad, id_estado, 
-                                sistema_afectado, descripcion_tecnica, causa_raiz, impacto_generado, fuente_registro)
-                                VALUES (?, 'Buzón Automático', ?, ?, ?,
-                                    COALESCE((SELECT id_tipo FROM cat_tipo_alerta WHERE nombre LIKE ? LIMIT 1), 1),
-                                    COALESCE((SELECT id_activo FROM cat_activo WHERE nombre LIKE ? LIMIT 1), 1),
-                                    COALESCE((SELECT id_area FROM cat_areas WHERE nombre LIKE ? LIMIT 1), 1),
-                                    COALESCE((SELECT id_severidad FROM cat_severidad WHERE nivel LIKE ? LIMIT 1), 1),
-                                    1, ?, ?, ?, ?, 'IA_GROQ'
-                                )
-                            `;
+                                const query = `
+                                    INSERT INTO incidentes_ciberseguridad 
+                                    (folio_interno, fuente_alerta, tlp_color, cves_relacionados, activo_especifico,
+                                    id_tipo, id_activo, areas_asignadas, id_severidad, id_estado, 
+                                    sistema_afectado, descripcion_tecnica, causa_raiz, impacto_generado, fuente_registro)
+                                    VALUES (?, 'Buzón Automático', ?, ?, ?,
+                                        COALESCE((SELECT id_tipo FROM cat_tipo_alerta WHERE nombre LIKE ? LIMIT 1), 1),
+                                        COALESCE((SELECT id_activo FROM cat_activo WHERE nombre LIKE ? LIMIT 1), 1),
+                                        ?, 
+                                        COALESCE((SELECT id_severidad FROM cat_severidad WHERE nivel LIKE ? LIMIT 1), 1),
+                                        1, ?, ?, ?, ?, 'IA_GROQ'
+                                    )
+                                `;
 
-                            const sTipo = `${(datosIA.tipo || "Vuln").substring(0, 4)}%`;
-                            const sActivo = `${(datosIA.activo || "App").substring(0, 4)}%`;
-                            const sArea = `${(datosIA.area_asignada || "SOC").substring(0, 4)}%`;
-                            const sSev = `${(datosIA.severidad || "Med").substring(0, 4)}%`;
+                                const sTipo = `${(datosIA.tipo || "Vuln").substring(0, 4)}%`;
+                                const sActivo = `${(datosIA.activo || "App").substring(0, 4)}%`;
+                                const areasAAsignar = datosIA.area_asignada || "SOC"; 
+                                const sSev = `${(datosIA.severidad || "Med").substring(0, 4)}%`;
 
-                            db.query(query, [
-                                folioGenerado, datosIA.tlp_color, cvesTexto, especifique,
-                                sTipo, sActivo, sArea, sSev,
-                                sistema, datosIA.descripcion_tecnica, datosIA.causa_raiz, datosIA.impacto_generado
-                            ], (err) => {
-                                if (err) console.error(`❌ Error en folio ${folioGenerado}:`, err.message);
-                                else console.log(`✅ Folio Creado: ${folioGenerado} -> ${sistema}`);
-                            });
-                        });
-                    }else {
-                        console.log("⏭️ Correo ignorado (No cumple criterios de incidente).");
-                    }
+                                // Guardamos en BD y esperamos a que termine usando una promesa
+                                await new Promise((resDb) => {
+                                    db.query(query, [
+                                        folioGenerado, datosIA.tlp_color, cvesTexto, especifique,
+                                        sTipo, sActivo, areasAAsignar, sSev,
+                                        sistema, datosIA.descripcion_tecnica, datosIA.causa_raiz, datosIA.impacto_generado
+                                    ], (err) => {
+                                        if (err) console.error(`❌ Error en BD:`, err.message);
+                                        else console.log(`✅ Folio Creado: ${folioGenerado}`);
+                                        resDb(); // Terminó de guardar, sigue con la otra alerta
+                                    });
+                                });
+                            }
+                            
+                            // ¡Terminó con TODO el correo 1! Libera el ciclo para que siga con el correo 2
+                            resolve(); 
+                            
+                        } else {
+                            console.log("⏭️ Correo ignorado (No es incidente).");
+                            resolve(); // Libera el ciclo para que siga con el correo 2
+                        }
+                    });
                 });
-            }
+            } 
         });
     } catch (error) {
         console.error("❌ Error de conexión al buzón IMAP:", error.message);
