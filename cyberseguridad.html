@@ -13,6 +13,7 @@
 
  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <link rel="icon" href="Imagenes/Logos/favicon2.png" type="image/png" />
 
@@ -77,33 +78,65 @@
       <h1 class="dashboard-title mb-2">Monitor de Ciberseguridad (PGAC)</h1>
       <p class="dashboard-subtitle mb-3">Gestión, seguimiento y resolución de incidentes en tiempo real.</p>
 
-      <div class="intro-filters d-flex flex-wrap justify-content-center align-items-center gap-3">
-        <div class="date-filter d-flex align-items-center gap-2">
-          <label class="form-label mb-0 fw-semibold">Filtrar por:</label>
-          <select id="time-range" class="form-select">
-            <option value="all" selected >Todo el historial</option>
-            <option value="today">Últimas 24 horas</option>
-            <option value="last7">Últimos 7 días</option>
-            <option value="last30">Últimos 30 días</option>
-          </select>
-        </div>
-        <div class="repo-filter d-flex align-items-center gap-2">
-          <label class="form-label mb-0 fw-semibold">Severidad:</label>
-          <select id="severity-filter" class="form-select">
-            <option value="all">Todas</option>
-            <option value="critica">Críticas</option>
-            <option value="alta">Altas</option>
-            <option value="media">Medias</option>
-            <option value="baja">Bajas</option>
-          </select>
-        </div>
-        <div class="gemini-btn-wrapper d-flex gap-3">
-          <button class="btn btn-danger shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalRegistroAlerta" style="background-color: #7c1225; border-color: #7c1225;">
-            <i class="bi bi-shield-plus"></i> Registrar Nueva Alerta
-          </button>
-        </div>
-      </div>
+     <!-- ==========================================
+     PANEL DE FILTROS UNIFICADO
+     ========================================== -->
+<div class="bg-light p-4 rounded border shadow-sm mb-4">
+  
+  <!-- Contenedor Superior: Título y Botón alineados -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-funnel-fill text-danger me-2 fs-5"></i>
+      <h6 class="mb-0 fw-bold text-secondary text-uppercase" style="letter-spacing: 0.5px;">Filtrar tabla por:</h6>
     </div>
+
+    <!-- Botón movido a la derecha con tu estilo original -->
+    <button class="btn btn-danger shadow-sm d-flex align-items-center gap-2 px-4 fw-bold" 
+            data-bs-toggle="modal" 
+            data-bs-target="#modalRegistroAlerta" 
+            style="background-color: #7c1225; border-color: #7c1225; height: 40px; border-radius: 8px;">
+      <i class="bi bi-shield-plus"></i> Nueva Alerta
+    </button>
+  </div>
+  
+  <div class="row g-2"> 
+    <!-- Filtro de Tiempo -->
+    <div class="col-md-4">
+      <select class="form-select border-secondary-subtle" id="time-range">
+        <option value="all" selected>Histórico Completo</option>
+        <option value="today">Últimas 24 horas</option>
+        <option value="last7">Últimos 7 días</option>
+        <option value="last30">Últimos 30 días</option>
+      </select>
+    </div>
+
+    <!-- Filtro de Severidad -->
+    <div class="col-md-4">
+      <select class="form-select border-secondary-subtle" id="severity-filter">
+        <option value="all" selected>🚨 Cualquier Severidad</option>
+        <option value="critica">🔴 Crítica</option>
+        <option value="alta">🟠 Alta</option>
+        <option value="media">🟡 Media</option>
+        <option value="baja">🟢 Baja</option>
+      </select>
+    </div>
+
+    <!-- Filtro de Área -->
+    <div class="col-md-4">
+      <select class="form-select border-secondary-subtle" id="filtroAreaTabla">
+        <option value="Todas" selected>Todas las Áreas</option>
+        <option value="Desarrollo Web">Desarrollo Web</option>
+        <option value="Infraestructura">Infraestructura</option>
+        <option value="Soporte Técnico">Soporte Técnico</option>
+        <option value="Repositorios">Repositorios</option>
+        <option value="SOC">SOC (Ciberseguridad)</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
 
     <div class="row mb-4 text-center">
       <div class="col-md-3">
@@ -256,17 +289,47 @@
             </div>
 
             <div class="row mb-3">
-              <div class="col-md-12">
-                <label class="form-label fw-bold">Área Asignada (Atención)</label>
-                <select class="form-select" id="alertaArea" required>
-                  <option value="" selected disabled>Seleccione el área responsable de atender la alerta...</option>
-                  <option value="Todas las Áreas" class="fw-bold text-danger">Todas las Áreas</option>
-                  <option value="Desarrollo Web">Desarrollo Web</option>
-                  <option value="Infraestructura">Infraestructura</option>
-                  <option value="Soporte Técnico">Soporte Técnico</option>
-                  <option value="SOC">SOC (Ciberseguridad)</option>
-                </select>
-                <div class="form-text">Las notificaciones de correo de esta alerta solo se enviarán a los miembros de esta área.</div>
+              <div class="col-md-12 dropdown">
+                <label class="form-label fw-bold">Áreas Asignadas (Atención)</label>
+                <!-- Botón que despliega el menú -->
+                <button class="form-select text-start bg-white" type="button" id="btnAlertaArea" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                  Seleccione las áreas...
+                </button>
+                
+                <!-- Menú flotante con Checkboxes -->
+                <div class="dropdown-menu p-3 shadow-sm w-100">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input chk-area-registro" type="checkbox" value="Todas las Áreas" id="areaRegTodas">
+                    <label class="form-check-label text-danger fw-bold" for="areaRegTodas">Todas las Áreas</label>
+                  </div>
+                  <hr class="dropdown-divider">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input chk-area-registro" type="checkbox" value="Desarrollo Web" id="areaRegDesarrollo">
+                    <label class="form-check-label" for="areaRegDesarrollo">Desarrollo Web</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input chk-area-registro" type="checkbox" value="Infraestructura" id="areaRegInfra">
+                    <label class="form-check-label" for="areaRegInfra">Infraestructura</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input chk-area-registro" type="checkbox" value="Soporte Técnico" id="areaRegSoporte">
+                    <label class="form-check-label" for="areaRegSoporte">Soporte Técnico</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input chk-area-registro" type="checkbox" value="Repositorios" id="areaRegSoporte">
+                    <label class="form-check-label" for="areaRegSoporte">Repositorios</label>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input class="form-check-input chk-area-registro" type="checkbox" value="SOC" id="areaRegSOC">
+                    <label class="form-check-label" for="areaRegSOC">SOC (Ciberseguridad)</label>
+                  </div>
+                  <div class="text-end">
+                      <button type="button" class="btn btn-sm btn-primary fw-bold px-4" onclick="cerrarDropdown('btnAlertaArea')">Listo</button>
+                  </div>
+                </div>
+                <!-- Input invisible donde JavaScript guardará el texto final -->
+                <input type="hidden" id="alertaAreaVal" required>
+                <div class="form-text">Puede seleccionar múltiples áreas marcando las casillas correspondientes.</div>
               </div>
             </div>
 
@@ -353,14 +416,43 @@
                     <option>Servicios</option>
                 </select>
 
-                <label class="fw-bold mb-1">Área Asignada</label>
-                <select id="editArea" class="form-select form-select-sm mb-2">
-                    <option>Todas las Áreas</option>
-                    <option>Desarrollo Web</option>
-                    <option>Infraestructura</option>
-                    <option>Soporte Técnico</option>
-                    <option>SOC (Ciberseguridad)</option>
-                </select>
+                <label class="fw-bold mb-1">Áreas Asignadas</label>
+                <div class="dropdown mb-2">
+                    <button class="form-select form-select-sm text-start bg-white" type="button" id="btnEditArea" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                      Seleccione áreas...
+                    </button>
+                    <div class="dropdown-menu p-2 shadow-sm w-100">
+                        <div class="form-check mb-1">
+                          <input class="form-check-input chk-area-edit" type="checkbox" value="Todas las Áreas" id="areaEditTodas">
+                          <label class="form-check-label text-danger fw-bold small" for="areaEditTodas">Todas las Áreas</label>
+                        </div>
+                        <hr class="dropdown-divider my-1">
+                        <div class="form-check mb-1">
+                          <input class="form-check-input chk-area-edit" type="checkbox" value="Desarrollo Web" id="areaEditDesarrollo">
+                          <label class="form-check-label small" for="areaEditDesarrollo">Desarrollo Web</label>
+                        </div>
+                        <div class="form-check mb-1">
+                          <input class="form-check-input chk-area-edit" type="checkbox" value="Infraestructura" id="areaEditInfra">
+                          <label class="form-check-label small" for="areaEditInfra">Infraestructura</label>
+                        </div>
+                        <div class="form-check mb-1">
+                          <input class="form-check-input chk-area-edit" type="checkbox" value="Soporte Técnico" id="areaEditSoporte">
+                          <label class="form-check-label small" for="areaEditSoporte">Soporte Técnico</label>
+                        </div>
+                        <div class="form-check mb-1">
+                          <input class="form-check-input chk-area-edit" type="checkbox" value="Repositorios" id="areaEditSoporte">
+                          <label class="form-check-label small" for="areaEditSoporte">Repositorios</label>
+                        </div>
+                        <div class="form-check mb-2">
+                          <input class="form-check-input chk-area-edit" type="checkbox" value="SOC" id="areaEditSOC">
+                          <label class="form-check-label small" for="areaEditSOC">SOC</label>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button type="button" class="btn btn-sm btn-success py-0 fw-bold px-3" onclick="cerrarDropdown('btnEditArea')">Listo</button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="editAreaVal">
+                </div>
 
                 <label class="fw-bold mb-1">Severidad</label>
                 <select id="editSeveridad" class="form-select form-select-sm mb-3">
@@ -465,7 +557,10 @@
 
         </div>
         <div class="modal-footer d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-danger" id="btnGenerarDictamen">📄 Generar PDF del Dictamen</button>
+          <div>
+            <button type="button" class="btn btn-outline-danger" id="btnGenerarDictamen">📄 Generar PDF del Dictamen</button>
+            <button type="button" class="btn btn-outline-warning text-dark fw-bold ms-2" id="btnDescartarAlerta"><i class="bi bi-trash3-fill"></i> Descartar Alerta</button>
+          </div>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         </div>
       </div>
@@ -509,6 +604,7 @@
               <option value="Desarrollo Web">Desarrollo Web</option>
               <option value="Infraestructura">Infraestructura</option>
               <option value="Soporte Técnico">Soporte Técnico</option>
+              <option value="Repositorios">Repositorios</option>
               <option value="SOC">SOC</option>
             </select>
             <button class="btn btn-danger" type="button" id="btnAgregarCorreo" style="background-color: #7c1225;">Agregar</button>
