@@ -1,0 +1,42 @@
+{
+  "name": "directorio-app",
+  "version": "1.0.0",
+  "main": "index.html",
+  "node-main": "server.js",
+  "window": {
+    "title": "Directorio de Aplicaciones",
+    "width": 1200,
+    "height": 800
+  },
+  "chromium-args": "--disable-web-security",
+  "dependencies": {
+    "@google-analytics/data": "^5.2.0",
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.10.0",
+    "bcrypt": "^6.0.0",
+    "cheerio": "^1.1.0",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^17.3.1",
+    "express": "^4.18.2",
+    "express-mysql-session": "^3.0.3",
+    "express-rate-limit": "^8.3.1",
+    "express-session": "^1.18.2",
+    "imap-simple": "^5.1.0",
+    "mailparser": "^3.9.8",
+    "multer": "^2.0.1",
+    "mysql2": "^3.14.2",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.5",
+    "ollama": "^0.6.3",
+    "openai": "^6.35.0",
+    "puppeteer": "^24.18.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "pm2": "^6.0.8"
+  }
+}

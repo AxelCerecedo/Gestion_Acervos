@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SGA - Analytics</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Estilos propios -->
+  <link href="css/analytics.css" rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- D3 y TopoJSON -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
+
+  <!-- 🧾 Librería principal para PDF (Incluye html2canvas + jsPDF) -->
+   
+  <!-- jsPDF (UMD) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+  <!-- Seguridad -->
+  <script src="js/seguridad.js"></script>
+
+  <link rel="icon" href="Imagenes/Logos/favicon2.png" type="Imagenes/Logos/favicon2.png" />
+    
+</head>
+
+<body>
+
+  <!-- Toast flotante -->
+<div id="toastAlert" class="toast-alert d-none"></div>
+
+  <header class="header-container d-flex align-items-center justify-content-between px-3 mb-4">
+    <img src="Imagenes/Logos/logo.png" alt="Logo Fondo de Cultura" class="logo" />
+    <div class="text-center flex-grow-1 encabezado mx-3">
+      <h1 class="titulo-principal mb-1">Secretaría de Cultura</h1>
+      <h4 class="subtitulo mb-0">Sistema de Gestión de Acervos</h4>
+    </div>
+    <div class="text-end">
+      <button class="btn btn-outline-danger btn-lg" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+ <nav class="navbar navbar-expand-lg navbar-dark navbar-roja mb-3">
+  <div class="container-fluid">
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+      data-bs-target="#navbarNav" aria-controls="navbarNav"
+      aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mx-auto align-items-center">
+
+         <li class="nav-item" data-seccion="directorio">
+          <a class="nav-link" href="directorio.html">Directorio</a>
+        </li>
+
+        <li class="mx-2 text-white separator" data-separator>|</li>
+
+        <li class="nav-item" data-seccion="vulnerabilidades">
+          <a class="nav-link" href="vulnerabilidades.html">
+            Pruebas de Vulnerabilidad
+          </a>
+        </li>
+
+        <li class="mx-2 text-white separator" data-separator>|</li>
+
+        <li class="nav-item" data-seccion="usuarios">
+          <a class="nav-link" href="usuarios.html">Usuarios</a>
+        </li>
+
+        <li class="mx-2 text-white separator" data-separator>|</li>
+
+        <li class="nav-item" data-seccion="analytics">
+          <a class="nav-link" href="analytics.html">Analytics</a>
+        </li>
+
+        <li class="mx-2 text-white separator" data-separator>|</li>
+
+        <li class="nav-item" data-seccion="acervos">
+          <a class="nav-link" href="acervos.html">Acervos</a>
+        </li>
+
+        <li class="mx-2 text-white separator" data-separator>|</li>
+
+        <li class="nav-item" data-seccion="cyberseguridad">
+          <a class="nav-link" href="cyberseguridad.html">Cyberseguridad</a>
+        </li>
+
+         <li class="mx-2 text-white separator" data-separator>|</li>
+
+        <li class="nav-item" data-seccion="perfil">
+          <a class="nav-link" href="perfil.html">Mi perfil</a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <main class="flex-grow-1 container">
+
+  <div class="intro-card card card-full text-center mb-4 p-4">
+  <h1 class="dashboard-title mb-2">Dashboard de Google Analytics</h1>
+  <p class="dashboard-subtitle mb-3">Visualiza el tráfico y el rendimiento de los repositorios de WordPress.</p>
+
+  <div style="height: 5px;"></div>
+
+  <div class="intro-filters d-flex flex-wrap justify-content-center align-items-center gap-3">
+
+    <div class="date-filter d-flex align-items-center gap-2">
+      <label class="form-label mb-0 fw-semibold">Rango de fechas:</label>
+      <select id="date-range" class="form-select">
+        <option value="" selected disabled>Seleccionar rango de fecha</option>
+        <option value="today" data-label="Hoy">Hoy</option>
+        <option value="last7" data-label="Últimos 7 días">Últimos 7 días</option>
+        <option value="last28" data-label="Últimos 28 días">Últimos 28 días</option>
+        <option value="last30" data-label="Últimos 30 días">Últimos 30 días</option>
+        <option value="last90" data-label="Últimos 90 días">Últimos 90 días</option>
+        <option value="last365" data-label="Últimos 12 meses">Últimos 12 meses</option>
+      </select>
+    </div>
+
+    <div class="repo-filter d-flex align-items-center gap-2">
+      <label for="repo-selector" class="form-label mb-0 fw-semibold">Repositorio:</label>
+      <select id="repo-selector" class="form-select d-inline-block w-auto">
+        <option value="all">Todos los repositorios</option>
+      </select>
+    </div>
+
+    <div class="gemini-btn-wrapper d-flex gap-3">
+      <button id="history-button" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        Historial de Reportes 📄 
+      </button>
+
+      <button id="gemini-button" class="btn btn-primary d-flex align-items-center gap-2">
+        <span class="btn-text">Generar análisis con Gemini ✨</span>
+        <span class="spinner-border spinner-border-sm text-light d-none" role="status" aria-hidden="true"></span>
+      </button>
+    </div>
+    
+  </div>
+</div>
+
+<!-- 🧠 Modal de Análisis con IA (Gemini) -->
+<div class="modal fade" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <!-- Encabezado -->
+      <div class="modal-header bg-rojo-sc text-white">
+        <h5 class="modal-title" id="analysisModalLabel">Análisis de Tráfico con IA (Gemini)</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Cuerpo -->
+      <div class="modal-body" id="analysisModalBody">
+        <!-- Contenido dinámico -->
+      </div>
+
+      <!-- Pie de modal -->
+      <div class="modal-footer d-flex justify-content-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+
+        <button type="button" class="btn btn-danger" id="downloadPdfButton">
+          <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF
+        </button>
+
+        <button type="button" class="btn btn-success d-flex align-items-center gap-2" id="sendEmailButton">
+          <i class="bi bi-envelope-fill"></i> 
+          <span class="btn-text">Enviar por correo</span>
+          <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+ <!-- 📄 Modal para Reportes Guardados -->
+<div class="modal fade" id="savedReportModal" tabindex="-1" aria-labelledby="savedReportModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-rojo-sc text-white">
+        <h5 class="modal-title" id="savedReportModalLabel">Reporte guardado (Gemini)</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body" id="savedReportModalBody">
+        </div>
+
+      <div class="modal-footer d-flex justify-content-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+    <button type="button" class="btn btn-danger d-flex align-items-center gap-2" id="downloadSavedReportPdfButton">
+  <i class="bi bi-file-earmark-pdf-fill"></i>
+  <span class="btn-text">Descargar PDF</span>
+  <span class="spinner-border spinner-border-sm text-light d-none" role="status" aria-hidden="true"></span>
+</button>
+
+        <button type="button" class="btn btn-success d-flex align-items-center gap-2" id="sendSavedReportEmailButton">
+          <i class="bi bi-envelope-fill"></i>
+          <span class="btn-text">Reenviar por correo</span>
+          <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div id="loadingOverlay" class="loading-overlay d-none">
+  <div class="spinner-border text-light" role="status">
+    <span class="visually-hidden">Cargando...</span>
+  </div>
+</div>
+
+
+</div>
+
+  
+  <div class="dashboard-container">
+    
+      <div class="card">
+        <div class="card-header">
+          <h2>Usuarios</h2>
+        </div>
+        <div class="card-body text-center">
+          <div class="metric-value" id="totalUsers">0</div>
+          <div class="metric-label">Últimos 30 días</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Sesiones</h2>
+        </div>
+        <div class="card-body text-center">
+          <div class="metric-value" id="totalSessions">0</div>
+          <div class="metric-label">Últimos 30 días</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Tasa de rebote</h2>
+        </div>
+        <div class="card-body text-center">
+          <div class="metric-value" id="bounceRate">0%</div>
+          <div class="metric-label">Promedio</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Duración promedio</h2>
+        </div>
+        <div class="card-body text-center">
+          <div class="metric-value" id="avgSessionDuration">0s</div>
+          <div class="metric-label">Duración de la sesión</div>
+        </div>
+      </div>
+
+     <div class="chart-grid-container">
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2>Usuarios por dispositivo</h2>
+                    <small class="text-muted">Distribución de usuarios según el tipo de dispositivo usado.</small>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="btn-group btn-group-sm btn-group-usersbydevice" role="group">
+                            <button type="button" class="btn btn-outline-danger active" data-chart-type="pie">Pastel</button>
+                            <button type="button" class="btn btn-outline-danger" data-chart-type="bar">Barras</button>
+                        </div>
+                    </div>
+
+                    <canvas id="usersByDeviceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2>Usuarios nuevos vs. recurrentes</h2>
+                    <small class="text-muted">Comparación entre usuarios nuevos y los que regresan al sistema.</small>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="btn-group btn-group-sm btn-group-newvsreturning" role="group">
+                            <button type="button" class="btn btn-outline-danger active" data-chart-type="pie">Pastel</button>
+                            <button type="button" class="btn btn-outline-danger" data-chart-type="bar">Barras</button>
+                        </div>
+                    </div>
+
+                    <canvas id="newVsReturningChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+      <div class="card card-full">
+        <div class="card-header">
+          <h2>Sesiones por día</h2>
+          <small class="text-muted">Número de sesiones registradas cada día.</small>
+        </div>
+        <div class="card-body">
+          <canvas id="sessionsOverTimeChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card card-full">
+        <div class="card-header">
+          <h2>Fuentes de tráfico</h2>
+          <small class="text-muted">Principales canales que generan sesiones al sistema.</small>
+        </div>
+        <div class="card-body">
+          <canvas id="trafficSourcesChart"></canvas>
+        </div>
+      </div>
+
+     <div id="tablesContainer">
+
+    <div id="topPagesTableContainer" class="card card-full table-card">
+    <div class="card-header">
+        <h2>Vistas por página</h2>
+        <small class="text-muted">Las páginas más visitadas y su número de visitas.</small>
+    </div>
+    <div id="topPagesRepoName" class="fw-bold text-danger mt-2"></div>
+    <div class="card-body">
+        <table class="table table-striped" id="topPagesTable">
+            <thead>
+                <tr>
+                    <th>Página</th>
+                    <th>Visitas</th>
+                </tr>
+            </thead>
+            <tbody id="topPagesTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+    <div id="usersByCountryTableContainer" class="card card-full table-card">
+        <div class="card-header">
+            <h2>Usuarios por país</h2>
+            <small class="text-muted">Lista de la distribución de usuarios por ubicación geográfica.</small>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped" id="usersByCountryTable">
+                <thead>
+                    <tr>
+                        <th>País</th>
+                        <th>Usuarios</th>
+                    </tr>
+                </thead>
+                <tbody id="usersByCountryTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card card-full">
+    <div class="card-header">
+        <h2>Usuarios activos por país</h2>
+        <small class="text-muted">Mapa de la distribución de usuarios activos por ubicación geográfica.</small>
+    </div>
+    <div class="card-body">
+        <div id="usersByCountryMap"></div>
+    </div>
+</div>
+
+
+</main>
+
+<div class="modal fade" id="reportsHistoryModal" tabindex="-1" aria-labelledby="reportsHistoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+          <div class="modal-header bg-rojo-sc text-white">
+              <h5 class="modal-title" id="reportsHistoryModalLabel">Historial de reportes de análisis</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <p>Mostrando historial para: <strong id="historyRepoNameDisplay"></strong></p>
+              <div class="table-responsive">
+                  <table class="table table-striped table-hover">
+                      <thead>
+                          <tr>
+                              <th>Fecha/Hora</th>
+                              <th>Repositorio</th>
+                              <th>Destinatario</th>
+                              <th>Estado</th>
+                              <th>Acciones</th>
+                          </tr>
+                      </thead>
+                      <tbody id="reportsHistoryTableBody">
+                          <tr><td colspan="5" class="text-center">Seleccione un repositorio para cargar el historial.</td></tr>
+                      </tbody>
+                  </table>
+              </div>
+              <div id="historyLoading" class="text-center mt-3 d-none">
+                   <div class="spinner-border text-danger" role="status"><span class="visually-hidden">Cargando...</span></div>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div id="toastMessage" class="toast-message"></div>
+
+
+ <footer class="main-footer">
+  <div class="footer-content">
+    <!-- <img src="Imagenes/Logos/LC_P.png" alt="Logo de Secretaría de Cultura" class="footer-logo"> -->
+    <img src="Imagenes/Logos/favicon.png" alt="Logo de SGA" class="footer-logo footer-logo-right">
+    <p class="footer-text">
+      Todos los derechos reservados. | En desarrollo por Axel Cerecedo 👨🏻‍💻
+    </p>
+  </div>
+</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="js/pdf-generator.js"></script>
+
+  <script src="js/analytics.js"></script>
+
+</body>
+</html>

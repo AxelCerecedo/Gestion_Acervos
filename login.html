@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesión - Secretaría de Cultura</title>
+  <link rel="stylesheet" href="css/login.css" />
+
+    <link rel="icon" href="Imagenes/Logos/favicon2.png" type="Imagenes/Logos/favicon2.png" />
+
+    
+</head>
+<body>
+  <!-- ENCABEZADO -->
+  <header class="barra-completa">
+    <div class="logo-container">
+     <img src="Imagenes/Logos/logo.png" alt="Logo Secretaría de Cultura" class="logo-login" />
+    </div>
+    <div class="barra-roja">
+      <div class="textos-header">
+        <h1 class="titulo">Secretaría de Cultura</h1>
+        <h3 class="subtitulo">Sistema Gestor de Acervos</h3>
+      </div>
+      <div class="caja-fecha">
+        <div class="fecha-actual" id="fecha"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="zona-login">
+    <div class="imagen-equipo slider">
+      <div class="slides">
+        <div class="slide active">
+          <img src="Imagenes/Login/FIC_1.png" alt="A passage to Bollywood" />
+          <p class="caption">A passage to Bollywood.</p>
+        </div>
+        <div class="slide">
+          <img src="Imagenes/Login/FRR.png" alt="Locomotora de vapor NdeM 650" />
+          <p class="caption">Locomotora de vapor NdeM 650</p>
+        </div>
+        <div class="slide">
+          <img src="Imagenes/Login/Multimedia.png" alt="Nayarit en Los Pinos" />
+          <p class="caption">Nayarit en Los Pinos</p>
+        </div>
+        <div class="slide">
+          <img src="Imagenes/Login/FIC_2.png" alt="Presentación de la Orquesta Sinfónica de la Universidad de Guanajuato" />
+          <p class="caption">Presentación de la Orquesta Sinfónica de la Universidad de Guanajuato</p>
+        </div>
+        <div class="slide">
+          <img src="Imagenes/Login/CI.png" alt="Rana Toro" />
+          <p class="caption">Rana Toro</p>
+        </div>
+        <div class="slide">
+          <img src="Imagenes/Login/CI_2.png" alt="Totem" />
+          <p class="caption">Totem</p>
+        </div>
+        <div class="slide">
+          <img src="Imagenes/Login/CI_3.png" alt="Mujeres empujando a soldados" />
+          <p class="caption">Mujeres empujando a soldados</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-container">
+      <h2>Inicio de Sesión</h2>
+      <form id="login-form">
+        <label for="usuario">Correo electrónico:</label>
+        <input type="text" id="usuario" name="usuario" required />
+
+        <label for="contrasena">Contraseña:</label>
+        <input type="password" id="contrasena" name="contrasena" required />
+
+        <button type="submit">Ingresar</button>
+      </form>
+       <p><a href="rest_cont.html">¿Olvidaste tu contraseña?</a></p>
+    </div>
+  </main>
+
+<footer class="main-footer">
+  <div class="footer-content">
+    <!-- <img src="Imagenes/Logos/LC_P.png" alt="Logo de Secretaría de Cultura" class="footer-logo"> -->
+    <img src="Imagenes/Logos/favicon.png" alt="Logo de SGA" class="footer-logo footer-logo-right">
+    <p class="footer-text">
+      Todos los derechos reservados. | En desarrollo por Axel Cerecedo 👨🏻‍💻
+    </p>
+  </div>
+</footer>
+
+  <!-- Fecha en español -->
+  <script>
+    const fecha = new Date();
+    const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('fecha').textContent = fecha.toLocaleDateString('es-MX', opciones);
+  </script>
+
+  <!-- Slider -->
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    let currentSlide = 0;
+    setInterval(() => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }, 4000);
+  </script>
+  <!-- Tu script personalizado de login -->
+<script src="js/login.js"></script>
+
+</body>
+</html>

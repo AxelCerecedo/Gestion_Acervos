@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SGA - Usuarios</title>
+
+  <script src="js/seguridad.js" defer></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="css/usuarios.css" rel="stylesheet" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" defer></script>
+
+  <link rel="icon" href="Imagenes/Logos/favicon2.png" type="image/png" />
+</head>
+
+<body>
+  <header class="header-container d-flex align-items-center justify-content-between px-3 mb-4">
+    <img src="Imagenes/Logos/logo.png" alt="Logo Fondo de Cultura" class="logo" />
+    <div class="text-center flex-grow-1 encabezado mx-3">
+      <h1 class="titulo-principal mb-1">Secretaría de Cultura</h1>
+      <h4 class="subtitulo mb-0">Sistema de Gestión de Acervos</h4>
+    </div>
+    <div class="text-end">
+      <button class="btn btn-outline-danger btn-lg" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-roja mb-3">
+    <div class="container-fluid">
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+        data-bs-target="#navbarNav" aria-controls="navbarNav"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto align-items-center">
+
+           <li class="nav-item" data-seccion="directorio">
+            <a class="nav-link" href="directorio.html">Directorio</a>
+          </li>
+
+          <li class="mx-2 text-white separator" data-separator>|</li>
+
+          <li class="nav-item" data-seccion="vulnerabilidades">
+            <a class="nav-link" href="vulnerabilidades.html">
+              Pruebas de Vulnerabilidad
+            </a>
+          </li>
+
+          <li class="mx-2 text-white separator" data-separator>|</li>
+
+          <li class="nav-item" data-seccion="usuarios">
+            <a class="nav-link active fw-bold" href="usuarios.html">Usuarios</a>
+          </li>
+
+          <li class="mx-2 text-white separator" data-separator>|</li>
+
+          <li class="nav-item" data-seccion="analytics">
+            <a class="nav-link" href="analytics.html">Analytics</a>
+          </li>
+
+          <li class="mx-2 text-white separator" data-separator>|</li>
+
+          <li class="nav-item" data-seccion="acervos">
+            <a class="nav-link" href="acervos.html">Acervos</a>
+          </li>
+
+          <li class="mx-2 text-white separator" data-separator>|</li>
+
+          <li class="nav-item" data-seccion="cyberseguridad">
+            <a class="nav-link" href="cyberseguridad.html">Cyberseguridad</a>
+          </li>
+
+           <li class="mx-2 text-white separator" data-separator>|</li>
+
+          <li class="nav-item" data-seccion="perfil">
+            <a class="nav-link" href="perfil.html">Mi perfil</a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="dashboard" id="dashboardResumen" style="margin: 1rem 2rem;">
+    Cargando resumen...
+  </div>
+
+  <main class="flex-grow-1">
+    <section class="usuarios-toolbar container-fluid mb-4">
+      <div class="toolbar-grid">
+
+        <div class="filtros-container">
+          <div class="item">
+            <label for="searchInput">Buscar usuario:</label>
+            <input id="searchInput" type="search" class="form-control" placeholder="Buscar por nombre o correo" />
+          </div>
+
+          <div class="item">
+            <label for="filterRol">Filtrar por rol:</label>
+            <select id="filterRol" class="form-select">
+              <option value="">Seleccionar...</option> 
+              <option value="admin">Administrador</option>
+              <option value="lector">Lector</option>
+              <option value="ciberseguridad">Ciberseguridad (SOC)</option>
+            </select>
+          </div>
+
+          <div class="item">
+            <label for="filterRepositorios">Filtrar por repositorio:</label>
+            <select id="filterRepositorios" class="form-select" ></select>
+          </div>
+        </div>
+
+        <div class="botones-container">
+          <div class="item">
+            <label class="invisible">Nuevo usuario:</label>
+            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#modalNuevoUsuario">+ Nuevo Usuario</button>
+          </div>
+
+          <div class="item">
+            <label class="invisible">Limpiar filtros:</label>
+            <button id="btnLimpiarFiltros" class="btn btn-outline-secondary w-100">Limpiar Filtros</button>
+          </div>
+
+          
+          <div class="item">
+            <label class="invisible">Actualizar usuarios:</label>
+            <button id="exportExcelBtn" class="btn btn-outline-primary w-100">Actualizar usuarios</button>
+          </div>
+        
+
+          <div class="item">
+            <label class="invisible">Exportar CSV:</label>
+            <button id="exportCsvBtn" class="btn btn-outline-danger w-100">Exportar CSV</button>
+          </div>
+
+      </div>
+      <div id="alertaCambio" class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 d-none" role="alert" style="z-index:1050;">
+        Estado actualizado correctamente.
+      </div>
+    </section>
+
+    <section class="results container-fluid">
+      <table id="tableContainer" class="table table-striped" style="display: table;">
+        <thead>
+          <tr>
+            <th>Foto</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Repositorios</th>
+            <th>Estado</th> 
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+      <div class="d-flex justify-content-end mb-2 mt-2">
+        <span id="contadorUsuarios" class="badge bg-primary fs-6">Total: 0 usuarios</span>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <div class="modal-header" style="background-color: #7c1225; color: white;">
+          <h5 class="modal-title" id="modalEditarUsuarioLabel">Editar Usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <form id="formEditarUsuario" enctype="multipart/form-data">
+            <input type="hidden" id="editarId" name="id" />
+
+            <div class="mb-3">
+              <label for="editarNombre" class="form-label">Nombre:</label>
+              <input type="text" id="editarNombre" name="nombre" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="editarCorreo" class="form-label">Correo electrónico:</label>
+              <input type="email" id="editarCorreo" name="correo" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="editarRol" class="form-label">Rol:</label>
+              <select id="editarRol" name="rol" class="form-select" required>
+                <option value="admin">Administrador</option>
+                <option value="lector">Lector</option>
+                <option value="ciberseguridad">Ciberseguridad (SOC)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="fotoPerfil" class="form-label">Foto de perfil:</label>
+              <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/*" class="form-control" />
+            </div>
+
+
+            <div class="mb-3 form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="editarActivo" name="activo" />
+              <label class="form-check-label" for="editarActivo">Activo</label>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" form="formEditarUsuario" class="btn btn-danger">Guardar cambios</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" aria-labelledby="modalNuevoUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <div class="modal-header" style="background-color: #198754; color: white;">
+          <h5 class="modal-title" id="modalNuevoUsuarioLabel">Nuevo Usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <form id="formNuevoUsuario" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="nuevoNombre" class="form-label">Nombre:</label>
+              <input type="text" id="nuevoNombre" name="nombre" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="nuevoCorreo" class="form-label">Correo electrónico:</label>
+              <input type="email" id="nuevoCorreo" name="correo" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="nuevoPassword" class="form-label">Contraseña:</label>
+              <input type="password" id="nuevoPassword" name="password" class="form-control" required minlength="6" autocomplete="new-password"/>
+            </div>
+
+            <div class="mb-3">
+              <label for="nuevoRol" class="form-label">Rol:</label>
+              <select id="nuevoRol" name="rol" class="form-select" required>
+                <option value="admin">Administrador</option>
+                <option value="lector" selected>Lector</option>
+                <option value="ciberseguridad">Ciberseguridad (SOC)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="nuevoFotoPerfil" class="form-label">Foto de perfil:</label>
+              <input type="file" id="nuevoFotoPerfil" name="foto_perfil" accept="image/*" class="form-control" />
+            </div>
+
+            <label class="form-label">Estado del usuario</label>
+
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="nuevoActivo"
+                name="activo"
+                checked
+              />
+              <label class="form-check-label" for="nuevoActivo">
+                Usuario activo
+              </label>
+            </div>
+
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" form="formNuevoUsuario" class="btn btn-success">Crear usuario</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalHistorial" tabindex="-1" aria-labelledby="modalHistorialLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <div class="modal-header" style="background-color: #343a40; color: white;">
+          <h5 class="modal-title" id="modalHistorialLabel">Historial de acciones</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <ul id="historialList" class="list-group"></ul>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalAcciones" tabindex="-1" aria-labelledby="modalAccionesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xxl modal-dialog-centered" id="modalAccionesDialog">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="modalAccionesLabel">Acciones para usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center" id="accionesModalBody">
+          </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="alertContainer" class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 1050; width: auto; min-width: 300px;">
+  </div>
+  
+  <header class="header-container d-flex align-items-center justify-content-between px-3 mb-4">
+  </header>
+
+  <footer class="main-footer">
+    <div class="footer-content">
+      <img src="Imagenes/Logos/favicon.png" alt="Logo de SGA" class="footer-logo footer-logo-right">
+      <p class="footer-text">
+        Todos los derechos reservados. | En desarrollo por Axel Cerecedo 👨🏻‍💻
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/usuarios.js" defer></script>
+</body>
+</html>

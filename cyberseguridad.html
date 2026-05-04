@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SGA - Alertas de Ciberseguridad</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="css/cyberseguridad.css" rel="stylesheet" />
+
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="icon" href="Imagenes/Logos/favicon2.png" type="image/png" />
+
+  <script src="js/seguridad.js" defer></script>
+
+</head>
+
+<body>
+
+  <div class="toast-container position-fixed top-0 end-0 p-4" style="z-index: 9999;">
+    <div id="liveToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body fs-6" id="toastBody"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <header class="header-container d-flex align-items-center justify-content-between px-3 mb-4">
+    <img src="Imagenes/Logos/logo.png" alt="Logo" class="logo" />
+    <div class="text-center flex-grow-1 encabezado mx-3">
+      <h1 class="titulo-principal mb-1">Secretaría de Cultura</h1>
+      <h4 class="subtitulo mb-0">Sistema de Gestión de Acervos</h4>
+    </div>
+    
+    <div class="text-end d-flex align-items-center gap-3">
+      <button type="button" class="btn btn-light position-relative border-0 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRecordatorios" style="color: #7c1225;">
+        <i class="bi bi-bell-fill fs-5"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="display: none;">
+          0 <span class="visually-hidden">alertas por vencer</span>
+        </span>
+      </button>
+    <button class="btn btn-outline-danger btn-lg" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-roja mb-3">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"></button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto align-items-center">
+           <li class="nav-item"><a class="nav-link" href="directorio.html">Directorio</a></li>
+          <li class="mx-2 text-white separator">|</li>
+          <li class="nav-item"><a class="nav-link" href="vulnerabilidades.html">Pruebas de Vulnerabilidad</a></li>
+          <li class="mx-2 text-white separator">|</li>
+          <li class="nav-item"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
+          <li class="mx-2 text-white separator">|</li>
+          <li class="nav-item"><a class="nav-link" href="analytics.html">Analytics</a></li>
+          <li class="mx-2 text-white separator">|</li>
+          <li class="nav-item"><a class="nav-link" href="acervos.html">Acervos</a></li>
+          <li class="mx-2 text-white separator">|</li>
+          <li class="nav-item"><a class="nav-link active fw-bold" href="cyberseguridad.html">Ciberseguridad</a></li>
+          <li class="mx-2 text-white separator">|</li>
+          <li class="nav-item"><a class="nav-link" href="perfil.html">Mi perfil</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-grow-1 container">
+    <div class="intro-card card card-full text-center mb-4 p-4 shadow-sm">
+      <h1 class="dashboard-title mb-2">Monitor de Ciberseguridad (PGAC)</h1>
+      <p class="dashboard-subtitle mb-3">Gestión, seguimiento y resolución de incidentes en tiempo real.</p>
+
+      <div class="intro-filters d-flex flex-wrap justify-content-center align-items-center gap-3">
+        <div class="date-filter d-flex align-items-center gap-2">
+          <label class="form-label mb-0 fw-semibold">Filtrar por:</label>
+          <select id="time-range" class="form-select">
+            <option value="all" selected >Todo el historial</option>
+            <option value="today">Últimas 24 horas</option>
+            <option value="last7">Últimos 7 días</option>
+            <option value="last30">Últimos 30 días</option>
+          </select>
+        </div>
+        <div class="repo-filter d-flex align-items-center gap-2">
+          <label class="form-label mb-0 fw-semibold">Severidad:</label>
+          <select id="severity-filter" class="form-select">
+            <option value="all">Todas</option>
+            <option value="critica">Críticas</option>
+            <option value="alta">Altas</option>
+            <option value="media">Medias</option>
+            <option value="baja">Bajas</option>
+          </select>
+        </div>
+        <div class="gemini-btn-wrapper d-flex gap-3">
+          <button class="btn btn-danger shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalRegistroAlerta" style="background-color: #7c1225; border-color: #7c1225;">
+            <i class="bi bi-shield-plus"></i> Registrar Nueva Alerta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4 text-center">
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 alert-card bg-danger text-white">
+          <div class="card-body">
+            <h5 class="card-title">Alertas Críticas</h5>
+            <h2 class="display-5 fw-bold" id="kpi-criticas">0</h2>
+            <small>SLA &lt; 1 hora</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 alert-card bg-warning text-dark">
+          <div class="card-body">
+            <h5 class="card-title">Alertas Altas</h5>
+            <h2 class="display-5 fw-bold" id="kpi-altas">0</h2>
+            <small>SLA &lt; 4 horas</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 alert-card bg-primary text-white">
+          <div class="card-body">
+            <h5 class="card-title">En Contención</h5>
+            <h2 class="display-5 fw-bold" id="kpi-proceso">0</h2>
+            <small>Por TI / SOC</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 alert-card bg-success text-white">
+          <div class="card-body">
+            <h5 class="card-title">MTTR</h5>
+            <h2 class="display-5 fw-bold" id="kpi-mttr">0m</h2>
+            <small>Tiempo Medio de Recuperación</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">Distribución por Tipo de Amenaza</h5>
+          </div>
+          <div class="card-body"><canvas id="threatTypeChart"></canvas></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">Activos más Atacados</h5>
+          </div>
+          <div class="card-body"><canvas id="assetsChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-5">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Registro de Alertas Recientes</h5>
+        
+        <div class="d-flex align-items-center gap-2">
+            <label for="limit-filter" class="form-label mb-0 small text-muted">Mostrar:</label>
+            <select id="limit-filter" class="form-select form-select-sm text-secondary" style="width: auto;">
+              <option value="5">5 registros</option>
+              <option value="10" selected>10 registros</option>
+              <option value="20">20 registros</option>
+              <option value="50">50 registros</option>
+            </select>
+        </div>
+
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Fecha de Registro</th> <th>Tipo</th>
+                <th>Activo</th>
+                <th>Área Asignada</th>
+                <th>Severidad</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="alertsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card-footer bg-light d-flex justify-content-between align-items-center" id="pagination-container">
+        <small class="text-muted fw-bold" id="pagination-info">Mostrando 0 de 0</small>
+        <div class="btn-group">
+            <button class="btn btn-sm btn-outline-secondary bg-white" id="btn-prev-page">Anterior</button>
+            <button class="btn btn-sm btn-outline-secondary bg-white" id="btn-next-page">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal fade" id="modalRegistroAlerta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header text-white" style="background-color: #7c1225;">
+          <h5 class="modal-title fw-bold" id="modalRegistroLabel">Captura Manual de Incidente (PGAC)</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formNuevaAlerta">
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">ID del Incidente</label>
+                <input type="text" class="form-control" id="alertaId" placeholder="Ej. ALERTA-001 o CVE..." required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Tipo de Alerta</label>
+                <select class="form-select" id="alertaTipo" required>
+                  <option value="" selected disabled>Seleccione del catálogo...</option>
+                  <option value="Malware">Malware</option>
+                  <option value="Phishing">Phishing</option>
+                  <option value="Intrusión">Intrusión</option>
+                  <option value="Fuga de información">Fuga de información</option>
+                  <option value="Vulnerabilidad">Vulnerabilidad</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Activo Afectado</label>
+                <select class="form-select" id="alertaActivo" required>
+                  <option value="" selected disabled>Seleccione el tipo de activo...</option>
+                  <option value="Servidor">Servidor</option>
+                  <option value="Endpoint">Endpoint</option>
+                  <option value="Aplicación">Aplicación</option>
+                  <option value="Red">Red</option>
+                  <option value="Librerías">Librerías</option>
+                  <option value="Módulos">Módulos</option>
+                  <option value="Servicios">Servicios</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Especifique</label>
+                <input type="text" class="form-control" id="alertaActivoEspecifique" placeholder="Ej. IP, hostname o url afectada..." required>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label fw-bold">Área Asignada (Atención)</label>
+                <select class="form-select" id="alertaArea" required>
+                  <option value="" selected disabled>Seleccione el área responsable de atender la alerta...</option>
+                  <option value="Todas las Áreas" class="fw-bold text-danger">Todas las Áreas</option>
+                  <option value="Desarrollo Web">Desarrollo Web</option>
+                  <option value="Infraestructura">Infraestructura</option>
+                  <option value="Soporte Técnico">Soporte Técnico</option>
+                  <option value="SOC">SOC (Ciberseguridad)</option>
+                </select>
+                <div class="form-text">Las notificaciones de correo de esta alerta solo se enviarán a los miembros de esta área.</div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+            <h6 class="fw-bold text-secondary mb-3">Clasificación de Severidad</h6>
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label fw-bold">Nivel de Severidad</label>
+                <select class="form-select" id="alertaSeveridad" required>
+                  <option value="" selected disabled>Seleccione la severidad...</option>
+                  <option value="Crítica">Crítica (Impacto grave, interrupción total)</option>
+                  <option value="Alta">Alta (Afectación significativa)</option>
+                  <option value="Media">Media (Impacto moderado)</option>
+                  <option value="Baja">Baja (Impacto menor)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="alert alert-light border text-center mt-3" role="alert">
+              <h6 class="mb-1">Tiempo de Respuesta (SLA): <span id="resultadoSLA" class="text-danger fw-bold">Pendiente</span></h6>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarAlerta">Registrar Alerta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalGestionarAlerta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered"> 
+      <div class="modal-content">
+        <div class="modal-header text-white" style="background-color: #5e0e1d;">
+          <h5 class="modal-title fw-bold">Gestionar Incidente: <span id="gestionarIdAlerta" class="text-warning">ALERTA-XXX</span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light">
+          
+          <div class="row">
+            <div class="col-md-4 border-end">
+              
+              <input type="hidden" id="folioModalOculto">
+
+              <h6 class="fw-bold text-secondary mb-3 border-bottom pb-2">Clasificación y SLA</h6>
+              
+              <div class="alert alert-secondary p-2 mb-3 small shadow-sm border" id="vistaDatosBasicos">
+                <div class="mb-1"><strong>Fecha:</strong> <span id="gestionarFecha" class="text-muted">--</span></div>
+                <div class="mb-1"><strong>Área:</strong> <span id="gestionarArea" class="text-muted">Sin Asignar</span></div>
+                <div class="mb-1"><strong>Tipo:</strong> <span id="gestionarTipo">Malware</span></div>
+                <div class="mb-1"><strong>Activo:</strong> <span id="gestionarActivo">Servidor</span></div>
+                <div class="mt-2 mb-2 d-flex align-items-center gap-2">
+                    <strong>Severidad:</strong> <span id="gestionarSeveridad" class="badge bg-danger">Crítica</span>
+                </div>
+                
+                <p class="mb-2 mt-3 pt-2 border-top"><strong>SLA:</strong> <span id="gestionarSLA"></span></p>
+
+                <button type="button" class="btn btn-sm btn-outline-warning w-100" onclick="toggleEdicionBasica()">
+                  <i class="bi bi-pencil-square"></i> Modificar Clasificación
+                </button>
+              </div>
+
+              <div class="alert alert-warning p-2 mb-3 small shadow-sm border" id="formularioEdicionBasica" style="display: none;">
+                <h6 class="text-danger fw-bold mb-2 border-bottom pb-1"><i class="bi bi-exclamation-circle-fill"></i> Corrección Manual</h6>
+                
+                <label class="fw-bold mb-1 mt-1">Tipo</label>
+                <select id="editTipo" class="form-select form-select-sm mb-2">
+                    <option>Malware</option>
+                    <option>Phishing</option>
+                    <option>Intrusión</option>
+                    <option>Fuga de información</option>
+                    <option>Vulnerabilidad</option>
+                </select>
+
+                <label class="fw-bold mb-1">Activo</label>
+                <select id="editActivo" class="form-select form-select-sm mb-2">
+                    <option>Servidor</option>
+                    <option>Endpoint</option>
+                    <option>Aplicación</option>
+                    <option>Red</option>
+                    <option>Librerías</option>
+                    <option>Módulos</option>
+                    <option>Servicios</option>
+                </select>
+
+                <label class="fw-bold mb-1">Área Asignada</label>
+                <select id="editArea" class="form-select form-select-sm mb-2">
+                    <option>Todas las Áreas</option>
+                    <option>Desarrollo Web</option>
+                    <option>Infraestructura</option>
+                    <option>Soporte Técnico</option>
+                    <option>SOC (Ciberseguridad)</option>
+                </select>
+
+                <label class="fw-bold mb-1">Severidad</label>
+                <select id="editSeveridad" class="form-select form-select-sm mb-3">
+                    <option value="Crítica">Crítica (Impacto grave, interrupción total)</option>
+                    <option value="Alta">Alta (Afectación significativa)</option>
+                    <option value="Media">Media (Impacto moderado)</option>
+                    <option value="Baja">Baja (Impacto menor)</option>
+                </select>
+
+                <div class="d-flex gap-2 mt-3 pt-2 border-top border-warning">
+                    <button type="button" class="btn btn-sm btn-success w-50 fw-bold" onclick="guardarEdicionBasica()"><i class="bi bi-save2-fill"></i> Guardar</button>
+                    <button type="button" class="btn btn-sm btn-secondary w-50 fw-bold" onclick="toggleEdicionBasica()"><i class="bi bi-x-circle-fill"></i> Cancelar</button>
+                </div>
+              </div>
+
+              <h6 class="fw-bold text-secondary mb-3 mt-4 border-bottom pb-2">Estado y Evidencias</h6>
+              <form id="formGestionarAlerta">
+                <div class="mb-3">
+                  <label class="form-label fw-bold small">Actualizar Estado</label>
+                  <select class="form-select form-select-sm" id="gestionarEstado">
+                    <option value="Análisis"> Análisis</option>
+                    <option value="Contención"> Contención</option>
+                    <option value="Erradicación"> Erradicación</option>
+                    <option value="Recuperación"> Recuperación</option>
+                    <option value="Cierre"> Cierre</option>
+                  </select>
+                </div>
+               <div class="mb-3">
+                  <label for="gestionarEvidencias" class="form-label fw-bold">Subir Evidencias (.log, .png, .pdf):</label>
+                  <input class="form-control" type="file" id="gestionarEvidencias" name="evidencias" multiple accept=".png,.jpg,.jpeg,.pdf,.log,.txt,.xlsx,.pptx,.docx,.csv">
+                  
+                  <ul id="listaEvidenciasVisual" class="list-group mt-2 shadow-sm"></ul>
+
+                </div>
+                <button type="button" class="btn btn-primary btn-sm w-100 mb-2 fw-bold" id="btnActualizarAlerta"><i class="bi bi-cloud-arrow-up-fill"></i> Guardar Estado y Evidencias</button>
+              </form>
+            </div>
+
+            <div class="col-md-8">
+              <h6 class="fw-bold text-secondary mb-3 border-bottom pb-2">Datos para Dictamen Técnico (PGAC)</h6>
+              <form id="formDictamen">
+                
+                <div class="row mb-2">
+                  <div class="col-md-7">
+                    <label class="form-label fw-bold small mb-1">Nombre del sistema afectado</label>
+                    <input type="text" class="form-control form-control-sm" id="dic_sistema" placeholder="Ej. Servidor Web...">
+                  </div>
+                  
+                  <div class="col-md-5">
+                    <label class="form-label fw-bold small mb-1 text-danger">CVEs Relacionados</label>
+                   <div class="form-control form-control-sm bg-white" id="dic_cves" style="height: 100px; overflow-y: auto;">
+                        <span class="text-muted fw-bold">Ninguno</span>
+                    </div>  
+                  </div>
+                </div>
+
+                <div class="row mb-2">
+                  <div class="col-12">
+                    <label class="form-label fw-bold small mb-1">Descripción técnica</label>
+                    <textarea class="form-control form-control-sm" id="dic_desc" rows="2" placeholder="Describa el incidente..."></textarea>
+                  </div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold small mb-1">Análisis de causa raíz</label>
+                    <textarea class="form-control form-control-sm" id="dic_causa" rows="2"></textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold small mb-1">Impacto generado</label>
+                    <textarea class="form-control form-control-sm" id="dic_impacto" rows="2"></textarea>
+                  </div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-12">
+                    <label class="form-label fw-bold small mb-1">Acciones realizadas</label>
+                    <textarea class="form-control form-control-sm" id="dic_acciones" rows="2" placeholder="Medidas de contención y erradicación..."></textarea>
+                  </div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold small mb-1">Conclusión técnica</label>
+                    <textarea class="form-control form-control-sm" id="dic_conclusion" rows="2"></textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold small mb-1">Recomendaciones</label>
+                    <textarea class="form-control form-control-sm" id="dic_recom" rows="2"></textarea>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold small mb-1">Responsable</label>
+                    <input type="text" class="form-control form-control-sm" id="dic_resp">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold small mb-1">VoBo</label>
+                    <input type="text" class="form-control form-control-sm" id="dic_vobo">
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-danger" id="btnGenerarDictamen">📄 Generar PDF del Dictamen</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalRecordatorios" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark border-bottom-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Tablero de Alertas SLA</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light">
+          <p class="text-muted small mb-3">Alertas activas en la Secretaría. Los correos de notificación se envían automáticamente al área asignada.</p>
+          <div class="list-group" id="listaNotificaciones">
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary me-auto btn-sm btn-config-correos"><i class="bi bi-gear-fill"></i> Directorio de Correos</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalConfigurarCorreos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered"> <div class="modal-content">
+        <div class="modal-header text-white" style="background-color: #5e0e1d;">
+          <h5 class="modal-title fw-bold"><i class="bi bi-envelope-at-fill me-2"></i> Directorio de Notificaciones SLA</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light">
+          <p class="text-muted small mb-3">Agregue los correos institucionales y asígnelos a un área. Solo recibirán advertencias de las alertas asignadas a su departamento.</p>
+          
+          <div class="input-group mb-4 shadow-sm">
+            <span class="input-group-text bg-white"><i class="bi bi-person-plus-fill text-muted"></i></span>
+            <input type="email" id="nuevoCorreoSLA" class="form-control border-start-0 pl-0" placeholder="Ej. analista@cultura.gob.mx">
+            <select class="form-select" id="nuevoCorreoArea" style="max-width: 220px;" required>
+              <option value="" selected disabled>Área...</option>
+              <option value="Desarrollo Web">Desarrollo Web</option>
+              <option value="Infraestructura">Infraestructura</option>
+              <option value="Soporte Técnico">Soporte Técnico</option>
+              <option value="SOC">SOC</option>
+            </select>
+            <button class="btn btn-danger" type="button" id="btnAgregarCorreo" style="background-color: #7c1225;">Agregar</button>
+          </div>
+
+          <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0 text-center text-sm">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-start ps-3">Correo Electrónico</th>
+                    <th>Área Asignada</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaContactosSLA">
+                  </tbody>
+              </table>
+            </div>
+          </div>
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalRecordatorios">Regresar a Tablero</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="contenedorPlantillaPDF" style="position: fixed; top: 0; left: 0; z-index: -9999; visibility: hidden;">
+    <div id="plantillaDictamen" style="width: 800px; padding: 40px; background: white; color: black; font-family: Arial, sans-serif; font-size: 13px;">
+      
+      <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #7c1225; padding-bottom: 15px;">
+        <h2 style="margin: 0; color: #7c1225; font-size: 22px; text-transform: uppercase; letter-spacing: 1px;">Secretaría de Cultura</h2>
+        <h3 style="margin: 5px 0 0 0; color: #333; font-size: 16px;">Formato de Dictamen Técnico de Incidente</h3>
+      </div>
+
+      <div style="display: flex; border: 1px solid #ddd; border-bottom: none; background-color: #f8f9fa;">
+        <div style="width: 25%; padding: 12px; font-weight: bold; border-right: 1px solid #ddd;">ID del incidente:</div>
+        <div style="width: 25%; padding: 12px; background-color: white; border-right: 1px solid #ddd;" id="pdf_id"></div>
+        <div style="width: 20%; padding: 12px; font-weight: bold; border-right: 1px solid #ddd;">Fecha:</div>
+        <div style="width: 30%; padding: 12px; background-color: white;" id="pdf_fecha"></div>
+      </div>
+
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd; color: #7c1225;">CVEs Relacionados:</div>
+        <div style="padding: 12px; font-weight: bold; color: #dc3545; white-space: pre-wrap; line-height: 1.5;" id="pdf_cves"></div>
+      </div>
+
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">Descripción técnica:</div>
+        <div style="padding: 12px; white-space: pre-wrap; line-height: 1.5;" id="pdf_desc"></div>
+      </div>
+
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">Análisis de causa raíz:</div>
+        <div style="padding: 12px; white-space: pre-wrap; line-height: 1.5;" id="pdf_causa"></div>
+      </div>
+      
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">Impacto generado:</div>
+        <div style="padding: 12px; white-space: pre-wrap; line-height: 1.5;" id="pdf_impacto"></div>
+      </div>
+
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">Acciones realizadas:</div>
+        <div style="padding: 12px; white-space: pre-wrap; line-height: 1.5;" id="pdf_acciones"></div>
+      </div>
+
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">Evidencias:</div>
+        <div style="padding: 12px; font-style: italic; color: #555; line-height: 1.5;" id="pdf_evidencias"></div>
+      </div>
+
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">Conclusión técnica:</div>
+        <div style="padding: 12px; white-space: pre-wrap; line-height: 1.5;" id="pdf_conclusion"></div>
+      </div>
+
+      <div style="border: 1px solid #ddd; border-bottom: none; page-break-inside: avoid;">
+        <div style="padding: 10px; font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">Recomendaciones:</div>
+        <div style="padding: 12px; white-space: pre-wrap; line-height: 1.5;" id="pdf_recom"></div>
+      </div>
+
+      <div style="display: flex; border: 1px solid #ddd; background-color: #f8f9fa; page-break-inside: avoid;">
+        <div style="width: 25%; padding: 12px; font-weight: bold; border-right: 1px solid #ddd;">Responsable:</div>
+        <div style="width: 25%; padding: 12px; background-color: white; border-right: 1px solid #ddd;" id="pdf_resp"></div>
+        <div style="width: 20%; padding: 12px; font-weight: bold; border-right: 1px solid #ddd;">VoBo:</div>
+        <div style="width: 30%; padding: 12px; background-color: white;" id="pdf_vobo"></div>
+      </div>
+
+      <div style="margin-top: 40px; text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px;">
+        <p style="margin: 0;">Documento generado a través del Sistema de Gestión de Acervos (SGA) - Módulo de Ciberseguridad.</p>
+        <p style="margin: 5px 0 0 0;">Este documento es de uso interno y confidencial.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/cyberseguridad.js"></script>
+</body>
+</html>
